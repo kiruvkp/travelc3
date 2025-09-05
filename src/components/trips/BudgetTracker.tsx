@@ -57,8 +57,8 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   async function fetchExpenses() {
     try {
       setLoading(true);
+      console.log('Fetching expenses for trip:', trip.id);
       
-      // First check if we can connect to Supabase
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
@@ -66,50 +66,11 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
         .order('date', { ascending: false });
 
       if (error) {
-        console.error('Supabase error fetching expenses:', error);
-        
-        // Create some sample data for demonstration if database fails
-        const sampleExpenses = [
-          {
-            id: 'sample-1',
-            trip_id: trip.id,
-            amount: 45.50,
-            category: 'food' as const,
-            description: 'Lunch at local restaurant',
-            date: new Date().toISOString().split('T')[0],
-            currency: trip.currency,
-            created_at: new Date().toISOString(),
-            activity_id: null
-          },
-          {
-            id: 'sample-2', 
-            trip_id: trip.id,
-            amount: 25.00,
-            category: 'transport' as const,
-            description: 'Taxi to hotel',
-            date: new Date().toISOString().split('T')[0],
-            currency: trip.currency,
-            created_at: new Date().toISOString(),
-            activity_id: null
-          },
-          {
-            id: 'sample-3',
-            trip_id: trip.id,
-            amount: 15.75,
-            category: 'entertainment' as const,
-            description: 'Museum entrance fee',
-            date: new Date().toISOString().split('T')[0],
-            currency: trip.currency,
-            created_at: new Date().toISOString(),
-            activity_id: null
-          }
-        ];
-        
-        setExpenses(sampleExpenses);
-        setLoading(false);
-        return;
+        console.error('Error fetching expenses:', error);
+        throw error;
       }
       
+      console.log('Fetched expenses:', data);
       setExpenses(data || []);
     } catch (error) {
       console.error('Error fetching expenses:', error);
@@ -170,11 +131,20 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
         if (error) {
           console.error('Error updating expense:', error);
-          alert(`Failed to update expense: ${error.message}`);
           throw error;
         }
       } else {
-        const { error } = await supabase
+        console.log('Creating new expense with data:', {
+          trip_id: trip.id,
+          amount: formData.amount,
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+          currency: trip.currency,
+          activity_id: formData.activity_id || null,
+        });
+        
+        const { data, error } = await supabase
           .from('expenses')
           .insert({
             trip_id: trip.id,
@@ -184,12 +154,15 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
             date: formData.date,
             currency: trip.currency,
             activity_id: formData.activity_id || null,
-          });
+          })
+          .select()
+          .single();
 
         if (error) {
           console.error('Error creating expense:', error);
-          alert(`Failed to add expense: ${error.message}`);
           throw error;
+        } else {
+          console.log('Expense created successfully:', data);
         }
       }
 
