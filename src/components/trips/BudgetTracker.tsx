@@ -57,6 +57,49 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   async function fetchExpenses() {
     try {
       setLoading(true);
+      
+      // Check if Supabase is properly configured
+      if (!import.meta.env.VITE_SUPABASE_URL || 
+          import.meta.env.VITE_SUPABASE_URL === 'your_supabase_url') {
+        console.warn('Supabase not configured - using mock data for expenses');
+        // Set mock expenses data for demonstration
+        const mockExpenses = [
+          {
+            id: 'mock-1',
+            trip_id: trip.id,
+            amount: 45.50,
+            category: 'food' as const,
+            description: 'Lunch at local restaurant',
+            date: new Date().toISOString().split('T')[0],
+            currency: trip.currency,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 'mock-2',
+            trip_id: trip.id,
+            amount: 25.00,
+            category: 'transport' as const,
+            description: 'Metro day pass',
+            date: new Date().toISOString().split('T')[0],
+            currency: trip.currency,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 'mock-3',
+            trip_id: trip.id,
+            amount: 15.75,
+            category: 'entertainment' as const,
+            description: 'Museum entrance fee',
+            date: new Date().toISOString().split('T')[0],
+            currency: trip.currency,
+            created_at: new Date().toISOString(),
+          }
+        ];
+        setExpenses(mockExpenses);
+        setLoading(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
@@ -67,6 +110,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       setExpenses(data || []);
     } catch (error) {
       console.error('Error fetching expenses:', error);
+      setExpenses([]); // Set empty array on error to prevent infinite loading
     } finally {
       setLoading(false);
     }

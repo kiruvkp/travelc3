@@ -128,6 +128,38 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
   async function fetchExpenses() {
     try {
       setLoading(true);
+      
+      // Check if Supabase is properly configured
+      if (!import.meta.env.VITE_SUPABASE_URL || 
+          import.meta.env.VITE_SUPABASE_URL === 'your_supabase_url') {
+        console.warn('Supabase not configured - using mock data for shared expenses');
+        // Set mock shared expenses data for demonstration
+        const mockSharedExpenses = [
+          {
+            id: 'mock-shared-1',
+            trip_id: trip.id,
+            title: 'Group dinner',
+            amount: 120.00,
+            currency: trip.currency,
+            paid_by: user?.id || 'mock-user',
+            split_type: 'equal' as const,
+            participants: [user?.id || 'mock-user'],
+            splits: { [user?.id || 'mock-user']: 120.00 },
+            date: new Date().toISOString().split('T')[0],
+            description: 'Dinner at seafood restaurant',
+            created_at: new Date().toISOString(),
+            paid_by_profile: {
+              full_name: 'You',
+              email: user?.email || 'demo@example.com',
+              avatar_url: undefined,
+            }
+          }
+        ];
+        setExpenses(mockSharedExpenses);
+        setLoading(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('shared_expenses')
         .select(`
@@ -145,6 +177,7 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
       setExpenses(data || []);
     } catch (error) {
       console.error('Error fetching shared expenses:', error);
+      setExpenses([]); // Set empty array on error to prevent infinite loading
     } finally {
       setLoading(false);
     }
