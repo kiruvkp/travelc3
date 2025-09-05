@@ -73,6 +73,26 @@ export default function AddActivityModal({
 
       if (error) throw error;
       
+      // If activity has a cost, create corresponding expense record
+      if (formData.cost && formData.cost > 0) {
+        const { error: expenseError } = await supabase
+          .from('expenses')
+          .insert({
+            trip_id: tripId,
+            activity_id: data.id,
+            amount: formData.cost,
+            currency: 'USD', // You might want to get this from trip currency
+            category: getCategoryFromActivityType(formData.category),
+            description: `${formData.title} - Activity cost`,
+            date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
+          });
+
+        if (expenseError) {
+          console.error('Error creating expense record:', expenseError);
+          // Don't fail the activity creation if expense creation fails
+        }
+      }
+      
       // Force a small delay to ensure database consistency
       await new Promise(resolve => setTimeout(resolve, 100));
       
@@ -82,6 +102,24 @@ export default function AddActivityModal({
       alert('Failed to add activity. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Helper function to map activity categories to expense categories
+  function getCategoryFromActivityType(activityCategory: string): 'food' | 'transport' | 'accommodation' | 'entertainment' | 'shopping' | 'other' {
+    switch (activityCategory) {
+      case 'dining':
+        return 'food';
+      case 'transport':
+        return 'transport';
+      case 'accommodation':
+        return 'accommodation';
+      case 'entertainment':
+        return 'entertainment';
+      case 'shopping':
+        return 'shopping';
+      default:
+        return 'other';
     }
   }
 

@@ -151,6 +151,44 @@ export default function ComprehensiveAIPlanner({
         
         if (error) throw error;
         
+        // Create corresponding expense records for activities with costs
+        const expensesToAdd = activitiesToAdd
+          .filter(activity => activity.cost && activity.cost > 0)
+          .map(activity => ({
+            trip_id: tripId,
+            activity_id: null, // Will be updated after we get the activity IDs
+            amount: activity.cost,
+            currency: 'USD', // Default currency, should be from trip
+            category: getCategoryFromActivityType(activity.category),
+            description: `${activity.title} - Activity cost`,
+            date: activity.start_time ? activity.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
+          }));
+
+        if (expensesToAdd.length > 0) {
+          // Get the created activities to link expenses
+          const { data: createdActivities, error: fetchError } = await supabase
+            .from('activities')
+            .select('id, title, cost')
+            .eq('trip_id', tripId)
+            .order('created_at', { ascending: false })
+            .limit(activitiesToAdd.length);
+
+          if (!fetchError && createdActivities) {
+            const expensesWithActivityIds = expensesToAdd.map((expense, index) => ({
+              ...expense,
+              activity_id: createdActivities[index]?.id || null,
+            }));
+
+            const { error: expenseError } = await supabase
+              .from('expenses')
+              .insert(expensesWithActivityIds);
+
+            if (expenseError) {
+              console.error('Error creating expense records:', expenseError);
+            }
+          }
+        }
+        
         // Mark activities as saved
         setActivitiesSaved(true);
         
@@ -160,6 +198,24 @@ export default function ComprehensiveAIPlanner({
     } catch (error) {
       console.error('Error adding activities to trip:', error);
       setError('Failed to add activities to trip. Please try again.');
+    }
+  }
+
+  // Helper function to map activity categories to expense categories
+  function getCategoryFromActivityType(activityCategory: string): 'food' | 'transport' | 'accommodation' | 'entertainment' | 'shopping' | 'other' {
+    switch (activityCategory) {
+      case 'dining':
+        return 'food';
+      case 'transport':
+        return 'transport';
+      case 'accommodation':
+        return 'accommodation';
+      case 'entertainment':
+        return 'entertainment';
+      case 'shopping':
+        return 'shopping';
+      default:
+        return 'other';
     }
   }
 
