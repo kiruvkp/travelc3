@@ -75,28 +75,31 @@ export default function AddActivityModal({
       
       // If activity has a cost, create corresponding expense record
       if (data && formData.cost > 0) {
-        try {
-          console.log('Creating expense record for activity:', data.id, 'with cost:', formData.cost);
-          
-          const { error: expenseError } = await supabase
-            .from('expenses')
-            .insert({
-              trip_id: tripId,
-              activity_id: data.id,
-              amount: formData.cost,
-              currency: 'USD',
-              category: getCategoryFromActivityType(formData.category),
-              description: formData.description || formData.title,
-              date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
-            });
+        console.log('Creating expense record for activity:', data.id, 'with cost:', formData.cost);
+        
+        const expenseData = {
+          trip_id: tripId,
+          activity_id: data.id,
+          amount: formData.cost,
+          currency: 'USD',
+          category: getCategoryFromActivityType(formData.category),
+          description: formData.description || formData.title,
+          date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
+        };
+        
+        console.log('Expense data to insert:', expenseData);
+        
+        const { data: expenseResult, error: expenseError } = await supabase
+          .from('expenses')
+          .insert(expenseData)
+          .select()
+          .single();
 
-          if (expenseError) {
-            console.error('Error creating expense record:', expenseError);
-          } else {
-            console.log('Expense record created successfully');
-          }
-        } catch (expenseError) {
-          console.error('Failed to create expense record:', expenseError);
+        if (expenseError) {
+          console.error('Error creating expense record:', expenseError);
+          console.error('Expense error details:', expenseError.message, expenseError.details);
+        } else {
+          console.log('Expense record created successfully:', expenseResult);
         }
       }
       
