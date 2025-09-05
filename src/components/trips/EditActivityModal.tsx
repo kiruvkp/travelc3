@@ -60,7 +60,7 @@ export default function EditActivityModal({
       if (error) throw error;
       
       // Handle expense record updates
-      if (formData.cost && formData.cost > 0) {
+      if (data && formData.cost && formData.cost > 0) {
         // Check if expense record already exists for this activity
         const { data: existingExpense, error: fetchError } = await supabase
           .from('expenses')
@@ -68,9 +68,7 @@ export default function EditActivityModal({
           .eq('activity_id', activity.id)
           .maybeSingle();
 
-        if (fetchError) {
-          console.error('Error checking existing expense:', fetchError);
-        } else if (existingExpense) {
+        if (!fetchError && existingExpense) {
           // Update existing expense
           const { error: updateError } = await supabase
             .from('expenses')
@@ -85,7 +83,7 @@ export default function EditActivityModal({
           if (updateError) {
             console.error('Error updating expense record:', updateError);
           }
-        } else {
+        } else if (!fetchError) {
           // Create new expense record
           const { error: createError } = await supabase
             .from('expenses')
@@ -93,7 +91,7 @@ export default function EditActivityModal({
               trip_id: activity.trip_id,
               activity_id: activity.id,
               amount: formData.cost,
-              currency: 'USD', // You might want to get this from trip currency
+              currency: 'USD',
               category: getCategoryFromActivityType(formData.category),
               description: `${formData.title} - Activity cost`,
               date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -103,7 +101,7 @@ export default function EditActivityModal({
             console.error('Error creating expense record:', createError);
           }
         }
-      } else {
+      } else if (data) {
         // If cost is 0 or removed, delete any existing expense record
         const { error: deleteError } = await supabase
           .from('expenses')

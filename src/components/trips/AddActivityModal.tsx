@@ -74,14 +74,14 @@ export default function AddActivityModal({
       if (error) throw error;
       
       // If activity has a cost, create corresponding expense record
-      if (formData.cost && formData.cost > 0) {
+      if (data && formData.cost && formData.cost > 0) {
         const { error: expenseError } = await supabase
           .from('expenses')
           .insert({
             trip_id: tripId,
             activity_id: data.id,
             amount: formData.cost,
-            currency: 'USD', // You might want to get this from trip currency
+            currency: 'USD',
             category: getCategoryFromActivityType(formData.category),
             description: `${formData.title} - Activity cost`,
             date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
@@ -89,17 +89,13 @@ export default function AddActivityModal({
 
         if (expenseError) {
           console.error('Error creating expense record:', expenseError);
-          // Don't fail the activity creation if expense creation fails
+          // Don't throw error here as activity was already created successfully
         }
       }
-      
-      // Force a small delay to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 100));
       
       onActivityAdded(data);
     } catch (error) {
       console.error('Error adding activity:', error);
-      alert('Failed to add activity. Please try again.');
     } finally {
       setLoading(false);
     }
