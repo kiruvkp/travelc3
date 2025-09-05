@@ -59,6 +59,37 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       setLoading(true);
       console.log('Fetching expenses for trip:', trip.id);
       
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('trip_id', trip.id)
+        .order('date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching expenses:', error);
+        throw error;
+      }
+
+      console.log('Fetched expenses:', data);
+      setExpenses(data || []);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Calculate budget metrics
+  const budgetCalculations = useMemo(() => {
+    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const activityCosts = activities.reduce((sum, activity) => sum + (activity.cost || 0), 0);
+    const totalSpent = totalExpenses + activityCosts;
+    const remainingBudget = trip.budget - totalSpent;
+    const budgetUsed = trip.budget > 0 ? (totalSpent / trip.budget) * 100 : 0;
+
+    return {
+      totalExpenses,
+      activityCosts,
       totalSpent,
       remainingBudget,
       budgetUsed
@@ -66,8 +97,29 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   }, [expenses, activities, trip.budget]);
 
   // Calculate category totals
-        console.error('Error fetching expenses:', error);
-        throw error;
+  const categoryTotals = useMemo(() => {
+    return expenseCategories.map(category => {
+      const categoryExpenses = expenses.filter(expense => expense.category === category.value);
+      const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      return {
+        ...category,
+        total,
+        count: categoryExpenses.length
+      };
+    });
+  }, [expenses]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    
+    try {
+      setLoading(true);
+      
+      if (editingExpense) {
+        console.log('Updating expense:', editingExpense.id, 'with data:', formData);
+        
+        const { error } = await supabase
+          .from('expenses')
           .update({
             amount: formData.amount,
             category: formData.category,
