@@ -42,6 +42,8 @@ export default function AddActivityModal({
     setLoading(true);
 
     try {
+      console.log('AddActivityModal: Starting to add activity...');
+      
       // Get the current order index for the selected day
       const { data: existingActivities, error: fetchError } = await supabase
         .from('activities')
@@ -51,35 +53,55 @@ export default function AddActivityModal({
         .order('order_index', { ascending: false })
         .limit(1);
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('AddActivityModal: Error fetching existing activities:', fetchError);
+        throw fetchError;
+      }
 
-      const nextOrderIndex = existingActivities.length > 0 
+      const nextOrderIndex = existingActivities && existingActivities.length > 0 
         ? existingActivities[0].order_index + 1 
         : 0;
 
-      const { data, error } = await supabase
+      console.log('AddActivityModal: Next order index:', nextOrderIndex);
+
+      // Create activity data with proper null handling
+      const activityData = {
+        trip_id: tripId,
+        day_number: selectedDay,
+        order_index: nextOrderIndex,
+        title: formData.title,
+        description: formData.description || null,
+        category: formData.category,
+        location: formData.location || null,
+        start_time: formData.start_time || null,
+        end_time: formData.end_time || null,
+        cost: formData.cost || 0,
+        booking_url: formData.booking_url || null,
+        notes: formData.notes || null,
+      };
+
+      console.log('AddActivityModal: Creating activity with data:', activityData);
+
+      const { data: createdActivity, error: activityError } = await supabase
         .from('activities')
-        .insert({
-          trip_id: tripId,
-          day_number: selectedDay,
-          order_index: nextOrderIndex,
-          ...formData,
-          start_time: formData.start_time || null,
-          end_time: formData.end_time || null,
-          cost: formData.cost || 0,
-        })
+        .insert(activityData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (activityError) {
+        console.error('AddActivityModal: Error creating activity:', activityError);
+        throw activityError;
+      }
+
+      console.log('AddActivityModal: Activity created successfully:', createdActivity);
       
       // If activity has a cost, create corresponding expense record
-      if (data && formData.cost > 0) {
-        console.log('Creating expense record for activity:', data.id, 'with cost:', formData.cost);
+      if (createdActivity && formData.cost > 0) {
+        console.log('AddActivityModal: Creating expense record for activity cost:', formData.cost);
         
         const expenseData = {
           trip_id: tripId,
-          activity_id: data.id,
+          activity_id: createdActivity.id,
           amount: formData.cost,
           currency: 'USD',
           category: getCategoryFromActivityType(formData.category),
@@ -87,7 +109,7 @@ export default function AddActivityModal({
           date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
         };
         
-        console.log('Expense data to insert:', expenseData);
+        console.log('AddActivityModal: Expense data to insert:', expenseData);
         
         const { data: expenseResult, error: expenseError } = await supabase
           .from('expenses')
@@ -96,16 +118,19 @@ export default function AddActivityModal({
           .single();
 
         if (expenseError) {
-          console.error('Error creating expense record:', expenseError);
-          console.error('Expense error details:', expenseError.message, expenseError.details);
+          console.error('AddActivityModal: Error creating expense record:', expenseError);
+          console.error('AddActivityModal: Expense error details:', expenseError.message, expenseError.details, expenseError.hint);
+          // Don't throw error here - activity was created successfully
+          alert(`Activity created but failed to create expense record: ${expenseError.message}`);
         } else {
-          console.log('Expense record created successfully:', expenseResult);
+          console.log('AddActivityModal: Expense record created successfully:', expenseResult);
         }
       }
       
-      onActivityAdded(data);
+      onActivityAdded(createdActivity);
     } catch (error) {
-      console.error('Error adding activity:', error);
+      console.error('AddActivityModal: Error in handleSubmit:', error);
+      alert(`Failed to add activity: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

@@ -51,6 +51,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   });
 
   useEffect(() => {
+    console.log('BudgetTracker: Component mounted/updated, fetching expenses...');
     fetchExpenses();
   }, [trip.id]);
 
@@ -59,7 +60,6 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       setLoading(true);
       console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
       
-      // Remove any mock data logic - always try to fetch from real database
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
@@ -73,10 +73,14 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
       console.log('BudgetTracker: Successfully fetched expenses:', data);
       console.log('BudgetTracker: Number of expenses found:', data?.length || 0);
+      
+      if (data && data.length > 0) {
+        console.log('BudgetTracker: Sample expense data:', data[0]);
+      }
+      
       setExpenses(data || []);
     } catch (error) {
       console.error('BudgetTracker: Error in fetchExpenses:', error);
-      // Set empty array on error but don't fail silently
       setExpenses([]);
     } finally {
       setLoading(false);
@@ -85,11 +89,25 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
   // Calculate budget metrics
   const budgetCalculations = useMemo(() => {
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    console.log('BudgetTracker: Calculating budget with expenses:', expenses.length, 'activities:', activities.length);
+    
+    const totalExpenses = expenses.reduce((sum, expense) => {
+      console.log('BudgetTracker: Adding expense amount:', expense.amount, 'category:', expense.category);
+      return sum + expense.amount;
+    }, 0);
+    
     const activityCosts = activities.reduce((sum, activity) => sum + (activity.cost || 0), 0);
     const totalSpent = totalExpenses + activityCosts;
     const remainingBudget = trip.budget - totalSpent;
     const budgetUsed = trip.budget > 0 ? (totalSpent / trip.budget) * 100 : 0;
+
+    console.log('BudgetTracker: Budget calculations:', {
+      totalExpenses,
+      activityCosts,
+      totalSpent,
+      remainingBudget,
+      budgetUsed
+    });
 
     return {
       totalExpenses,
@@ -102,9 +120,14 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
   // Calculate category totals
   const categoryTotals = useMemo(() => {
+    console.log('BudgetTracker: Calculating category totals from expenses:', expenses.length);
+    
     return expenseCategories.map(category => {
       const categoryExpenses = expenses.filter(expense => expense.category === category.value);
       const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      
+      console.log(`BudgetTracker: Category ${category.value}: ${categoryExpenses.length} expenses, total: ${total}`);
+      
       return {
         ...category,
         total,
@@ -121,7 +144,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       console.log('BudgetTracker: Submitting expense form data:', formData);
       
       if (editingExpense) {
-        console.log('BudgetTracker: Updating expense:', editingExpense.id, 'with data:', formData);
+        console.log('BudgetTracker: Updating expense:', editingExpense.id);
         
         const { error } = await supabase
           .from('expenses')
@@ -192,7 +215,6 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
       if (error) {
         console.error('BudgetTracker: Error deleting expense:', error);
-        alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
         throw error;
       }
       
@@ -201,6 +223,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       onBudgetUpdate?.();
     } catch (error) {
       console.error('BudgetTracker: Error deleting expense:', error);
+      alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
     }
   }
 

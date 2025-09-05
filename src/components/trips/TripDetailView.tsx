@@ -193,20 +193,14 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
 
   async function handleActivityAdded(activity: Activity) {
     console.log('TripDetailView: Activity added, refreshing data...');
-    setActivities(prev => {
-      const newActivities = [...prev, activity];
-      return newActivities.sort((a, b) => {
-        if (a.day_number !== b.day_number) {
-          return a.day_number - b.day_number;
-        }
-        return a.order_index - b.order_index;
-      });
-    });
     setShowAddActivity(false);
     
-    // Refresh activities and force budget tracker to refresh
+    // Refresh activities to get the latest data including any expense records
     console.log('TripDetailView: Fetching latest activities...');
     await fetchActivities();
+    
+    // Force budget tracker to refresh by incrementing the key
+    setBudgetRefreshKey(prev => prev + 1);
   }
 
   function handleEditActivity(activity: Activity) {
