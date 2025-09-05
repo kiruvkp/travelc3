@@ -196,6 +196,9 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
       });
     });
     setShowAddActivity(false);
+    
+    // Refresh activities to get the latest data including any expense records
+    await fetchActivities();
   }
 
   function handleEditActivity(activity: Activity) {

@@ -69,10 +69,10 @@ export default function ActivityCard({ activity, tripCurrency, onUpdate, onDelet
           {(activity.start_time || activity.end_time) && (
             <div className="flex items-center text-xs text-gray-600 bg-blue-50 px-2 py-1 rounded-full">
               <ClockIcon className="h-4 w-4 mr-1" />
-              {formatTime(activity.start_time)}
-              {activity.end_time && formatTime(activity.start_time) !== formatTime(activity.end_time) && 
-                ` - ${formatTime(activity.end_time)}`
-              }
+              {activity.start_time && formatTime(activity.start_time)}
+              {activity.end_time && activity.start_time && formatTime(activity.start_time) !== formatTime(activity.end_time) && 
+                ` - ${formatTime(activity.end_time)}`}
+              {!activity.start_time && activity.end_time && formatTime(activity.end_time)}
             </div>
           )}
           
@@ -103,14 +103,14 @@ export default function ActivityCard({ activity, tripCurrency, onUpdate, onDelet
           {activity.title}
         </h3>
         
-        {activity.location && (
+        {activity.location && activity.location !== 'undefined' && (
           <div className="flex items-center text-sm text-gray-600 mb-2">
             <MapPinIcon className="h-4 w-4 mr-1" />
             {activity.location}
           </div>
         )}
 
-        {activity.description && (
+        {activity.description && activity.description !== 'undefined' && (
           <p className="text-gray-700 text-sm leading-relaxed">
             {activity.description}
           </p>
@@ -119,14 +119,14 @@ export default function ActivityCard({ activity, tripCurrency, onUpdate, onDelet
 
       {(activity.notes || activity.booking_url) && (
         <div className="pt-3 border-t border-gray-100">
-          {activity.notes && (
+          {activity.notes && activity.notes !== 'undefined' && (
             <div className="mb-3">
               <h4 className="text-sm font-medium text-gray-900 mb-1">Notes</h4>
               <p className="text-sm text-gray-600">{activity.notes}</p>
             </div>
           )}
 
-          {activity.booking_url && (
+          {activity.booking_url && activity.booking_url !== 'undefined' && (
             <div>
               <a
                 href={activity.booking_url}
