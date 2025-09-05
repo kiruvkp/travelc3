@@ -21,10 +21,7 @@ if (supabaseKey && supabaseKey.length < 100 && !supabaseKey.includes('placeholde
   console.warn('Invalid Supabase API key format. Please check your VITE_SUPABASE_ANON_KEY in .env file.');
 }
 
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co', 
-  supabaseKey || 'placeholder-key', 
-  {
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseKey || 'placeholder-key', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
