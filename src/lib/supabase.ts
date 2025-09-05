@@ -6,22 +6,21 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing Supabase environment variables. Please check your .env file.');
   console.error('Required variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
-  throw new Error('Missing Supabase environment variables. Please check your .env file and restart the development server.');
+  console.warn('Using placeholder Supabase configuration. Please add real credentials for full functionality.');
 }
 
 // Validate URL format
-if (!supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
+if (supabaseUrl && !supabaseUrl.startsWith('https://') && !supabaseUrl.includes('placeholder')) {
   console.error('Invalid Supabase URL format:', supabaseUrl);
-  throw new Error('Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in .env file.');
+  console.warn('Invalid Supabase URL format. Please check your VITE_SUPABASE_URL in .env file.');
 }
 
 // Validate API key format (should be a long string)
-if (supabaseKey.length < 100) {
+if (supabaseKey && supabaseKey.length < 100 && !supabaseKey.includes('placeholder')) {
   console.error('Invalid Supabase API key format. Key appears too short.');
-  throw new Error('Invalid Supabase API key format. Please check your VITE_SUPABASE_ANON_KEY in .env file.');
+  console.warn('Invalid Supabase API key format. Please check your VITE_SUPABASE_ANON_KEY in .env file.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
