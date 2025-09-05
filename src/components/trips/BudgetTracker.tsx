@@ -97,7 +97,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     }, 0);
     
     const activityCosts = activities.reduce((sum, activity) => sum + (activity.cost || 0), 0);
-    const totalSpent = totalExpenses + activityCosts;
+    const totalSpent = totalExpenses; // Don't double count - expenses table already includes activity costs
     const remainingBudget = trip.budget - totalSpent;
     const budgetUsed = trip.budget > 0 ? (totalSpent / trip.budget) * 100 : 0;
 
@@ -305,8 +305,9 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">Activity Costs</p>
               <p className="text-lg font-semibold text-blue-600">
-                {formatCurrency(budgetCalculations.activityCosts, trip.currency as Currency)}
+                {formatCurrency(0, trip.currency as Currency)}
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Included in expenses</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">Other Expenses</p>
