@@ -185,7 +185,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
     }
   }
 
-  function handleActivityAdded(activity: Activity) {
+  async function handleActivityAdded(activity: Activity) {
     setActivities(prev => {
       const newActivities = [...prev, activity];
       return newActivities.sort((a, b) => {
