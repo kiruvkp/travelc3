@@ -38,7 +38,6 @@ export default function Header({ onCreateTrip, onHome, currentView }: HeaderProp
               <span className="text-white text-xl font-bold">T</span>
             </div>
             <div className="ml-3">
-              <h1 className="text-xl font-bold text-gray-900">TravelPlanner</h1>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">TravelPlanner</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">AI-Powered Itineraries</p>
             </div>
