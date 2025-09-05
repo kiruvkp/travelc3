@@ -1,0 +1,60 @@
+TRAVELPLANNER - PROJECT SUMMARY
+===============================
+
+🌍 AI-Powered Travel Itinerary Management Application
+
+REPOSITORY: https://github.com/kiruvkp/travelc3.git
+
+KEY FEATURES:
+✅ AI-Powered Trip Planning (OpenAI GPT-3.5 Turbo)
+✅ Collaborative Trip Planning with Real-time Sharing
+✅ Advanced Budget Tracking & Expense Management
+✅ Bill Splitting with Settlement Calculations
+✅ Drag & Drop Itinerary Management
+✅ Multi-currency Support (USD, EUR, GBP, JPY, CAD, AUD, INR)
+✅ Dark/Light Mode Theme Switching
+✅ Responsive Design for All Devices
+✅ User Authentication & Profile Management
+
+TECH STACK:
+- Frontend: React 18 + TypeScript + Vite + Tailwind CSS
+- Backend: Supabase (PostgreSQL + Auth + Real-time)
+- AI: OpenAI GPT-3.5 Turbo Integration
+- Drag & Drop: React Beautiful DnD
+- Forms: React Hook Form + Yup Validation
+- Icons: Heroicons + Lucide React
+- Date Handling: date-fns
+
+PROFESSIONAL SETUP:
+✅ GitHub Actions CI/CD Pipeline
+✅ Docker Support (Production & Development)
+✅ Complete Documentation (README, Contributing, Changelog)
+✅ Issue Templates (Bug Reports, Feature Requests)
+✅ Code Quality Tools (Prettier, ESLint, TypeScript)
+✅ Environment Configuration
+✅ Professional Landing Page
+✅ Comprehensive Error Handling
+
+DATABASE SCHEMA:
+- profiles (user management)
+- trips (trip information)
+- activities (itinerary items)
+- expenses (individual expenses)
+- shared_expenses (bill splitting)
+- trip_collaborators (sharing permissions)
+- trip_notes (personal notes)
+- destinations (curated destinations)
+
+DEPLOYMENT READY:
+- Environment variables configured
+- Docker containers ready
+- CI/CD pipeline set up
+- Production build optimized
+- Security headers configured
+
+UPLOAD METHODS:
+1. Download files → Git push locally
+2. GitHub web interface upload
+3. GitHub CLI (if available)
+
+Total Files: 50+ files including complete application, documentation, and configuration
