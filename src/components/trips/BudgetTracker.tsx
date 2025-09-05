@@ -57,8 +57,9 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   async function fetchExpenses() {
     try {
       setLoading(true);
-      console.log('Fetching expenses for trip:', trip.id);
+      console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
       
+      // Remove any mock data logic - always try to fetch from real database
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
@@ -66,14 +67,17 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
         .order('date', { ascending: false });
 
       if (error) {
-        console.error('Error fetching expenses:', error);
+        console.error('BudgetTracker: Error fetching expenses:', error);
         throw error;
       }
 
-      console.log('Fetched expenses:', data);
+      console.log('BudgetTracker: Successfully fetched expenses:', data);
+      console.log('BudgetTracker: Number of expenses found:', data?.length || 0);
       setExpenses(data || []);
     } catch (error) {
-      console.error('Error fetching expenses:', error);
+      console.error('BudgetTracker: Error in fetchExpenses:', error);
+      // Set empty array on error but don't fail silently
+      setExpenses([]);
     } finally {
       setLoading(false);
     }
@@ -114,9 +118,10 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     
     try {
       setLoading(true);
+      console.log('BudgetTracker: Submitting expense form data:', formData);
       
       if (editingExpense) {
-        console.log('Updating expense:', editingExpense.id, 'with data:', formData);
+        console.log('BudgetTracker: Updating expense:', editingExpense.id, 'with data:', formData);
         
         const { error } = await supabase
           .from('expenses')
@@ -130,11 +135,12 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           .eq('id', editingExpense.id);
 
         if (error) {
-          console.error('Error updating expense:', error);
+          console.error('BudgetTracker: Error updating expense:', error);
           throw error;
         }
+        console.log('BudgetTracker: Expense updated successfully');
       } else {
-        console.log('Creating new expense with data:', {
+        const expenseData = {
           trip_id: trip.id,
           amount: formData.amount,
           category: formData.category,
@@ -142,35 +148,32 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           date: formData.date,
           currency: trip.currency,
           activity_id: formData.activity_id || null,
-        });
+        };
+        
+        console.log('BudgetTracker: Creating new expense with data:', expenseData);
         
         const { data, error } = await supabase
           .from('expenses')
-          .insert({
-            trip_id: trip.id,
-            amount: formData.amount,
-            category: formData.category,
-            description: formData.description,
-            date: formData.date,
-            currency: trip.currency,
-            activity_id: formData.activity_id || null,
-          })
+          .insert(expenseData)
           .select()
           .single();
 
         if (error) {
-          console.error('Error creating expense:', error);
+          console.error('BudgetTracker: Error creating expense:', error);
+          console.error('BudgetTracker: Error details:', error.message, error.details);
           throw error;
         } else {
-          console.log('Expense created successfully:', data);
+          console.log('BudgetTracker: Expense created successfully:', data);
         }
       }
 
+      console.log('BudgetTracker: Refreshing expenses after save...');
       await fetchExpenses();
       resetForm();
       onBudgetUpdate?.();
     } catch (error) {
-      console.error('Error saving expense:', error);
+      console.error('BudgetTracker: Error saving expense:', error);
+      alert(`Failed to save expense: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -180,21 +183,24 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     if (!confirm('Are you sure you want to delete this expense?')) return;
 
     try {
+      console.log('BudgetTracker: Deleting expense:', expenseId);
+      
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', expenseId);
 
       if (error) {
-        console.error('Error deleting expense:', error);
-        alert(`Failed to delete expense: ${error.message}`);
+        console.error('BudgetTracker: Error deleting expense:', error);
+        alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
         throw error;
       }
       
+      console.log('BudgetTracker: Expense deleted successfully, refreshing...');
       await fetchExpenses();
       onBudgetUpdate?.();
     } catch (error) {
-      console.error('Error deleting expense:', error);
+      console.error('BudgetTracker: Error deleting expense:', error);
     }
   }
 

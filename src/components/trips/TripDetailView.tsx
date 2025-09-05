@@ -50,9 +50,15 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [selectedDay, setSelectedDay] = useState(1);
   const [currentTrip, setCurrentTrip] = useState<Trip>(trip);
+  const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
 
   useEffect(() => {
     fetchActivities();
+    
+    // Force budget tracker to refresh by calling onBudgetUpdate
+    console.log('TripDetailView: Triggering budget update...');
+    // We need to add a state to force budget tracker refresh
+    setBudgetRefreshKey(prev => prev + 1);
   }, [currentTrip.id]);
 
   async function fetchActivities() {
@@ -186,6 +192,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
   }
 
   async function handleActivityAdded(activity: Activity) {
+    console.log('TripDetailView: Activity added, refreshing data...');
     setActivities(prev => {
       const newActivities = [...prev, activity];
       return newActivities.sort((a, b) => {
@@ -197,7 +204,8 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
     });
     setShowAddActivity(false);
     
-    // Refresh activities to get the latest data including any expense records
+    // Refresh activities and force budget tracker to refresh
+    console.log('TripDetailView: Fetching latest activities...');
     await fetchActivities();
   }
 
@@ -455,6 +463,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
         {showBudgetTracker && (
           <div className="mb-6">
             <BudgetTracker
+              key={budgetRefreshKey}
               trip={currentTrip}
               activities={activities}
               onBudgetUpdate={fetchActivities}
