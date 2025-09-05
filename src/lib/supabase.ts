@@ -17,8 +17,8 @@ if (supabaseUrl && !supabaseUrl.startsWith('https://') && !supabaseUrl.includes(
 
 // Validate API key format (should be a long string)
 if (supabaseKey && supabaseKey.length < 100 && !supabaseKey.includes('placeholder')) {
-  console.error('Invalid Supabase API key format. Key appears too short.');
-  console.warn('Invalid Supabase API key format. Please check your VITE_SUPABASE_ANON_KEY in .env file.');
+  console.warn('Invalid Supabase API key format. Key appears too short.');
+  console.warn('Please check your VITE_SUPABASE_ANON_KEY in .env file for full functionality.');
 }
 
 export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseKey || 'placeholder-key', {
