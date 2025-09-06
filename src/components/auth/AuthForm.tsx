@@ -18,10 +18,6 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordResetSuccess, setPasswordResetSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -78,44 +74,11 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       return;
     }
 
-    if (!newPassword || !confirmPassword) {
-      setError('Please enter and confirm your new password.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match. Please try again.');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
-
     setLoading(true);
     setError('');
 
     try {
-      // First, try to sign in with the email to verify the user exists
-      const { data: userData, error: userError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: 'dummy-password' // This will fail but tells us if user exists
-      });
-
-      // If user doesn't exist, the error will be about invalid credentials
-      // If user exists but password is wrong, we can proceed with reset
-      if (userError && !userError.message.includes('Invalid login credentials')) {
-        throw new Error('User with this email address not found.');
-      }
-
-      // For demonstration purposes, we'll use the admin API to update the password
-      // In a real app, you'd send a password reset email with a secure token
-      
-      // Since we can't directly update another user's password without proper authentication,
-      // we'll simulate a successful password update for the demo
-      console.log('Password would be updated for:', email);
-      console.log('New password would be:', newPassword);
+      await resetPassword(email.trim());
       
       setPasswordResetSuccess(true);
       
@@ -127,12 +90,10 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       
     } catch (error: any) {
       console.error('Password reset error:', error);
-      if (error.message?.includes('User with this email address not found')) {
-        setError('No account found with this email address. Please check your email or create a new account.');
-      } else if (error.message?.includes('Supabase is not configured')) {
+      if (error.message?.includes('Supabase is not configured')) {
         setError('Database connection not configured. Please set up Supabase credentials.');
       } else {
-        setError('Failed to reset password. Please try again or contact support.');
+        setError(error.message || 'Failed to send reset email. Please try again or contact support.');
       }
     } finally {
       setLoading(false);
@@ -143,8 +104,6 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   function resetAllForms() {
     setShowForgotPassword(false);
     setPasswordResetSuccess(false);
-    setNewPassword('');
-    setConfirmPassword('');
     setError('');
     setEmail('');
     setPassword('');
@@ -184,9 +143,9 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
                   <CheckCircleIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Password Reset Successfully!</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Reset Email Sent!</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Your password has been updated. You can now sign in with your new password.
+                    We've sent a password reset link to your email address. Please check your email and follow the instructions to reset your password.
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     Redirecting to sign in...
@@ -198,7 +157,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
                 <div className="text-center mb-6">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Reset Password</h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Enter your email and create a new password.
+                    Enter your email address and we'll send you a link to reset your password.
                   </p>
                 </div>
 
@@ -219,79 +178,6 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
                       />
                     </div>
 
-                    <div>
-                      <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        New Password
-                      </label>
-                      <div className="mt-1 relative">
-                        <input
-                          id="new-password"
-                          type={showNewPassword ? 'text' : 'password'}
-                          required
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="block w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-10"
-                          placeholder="Enter new password"
-                          minLength={6}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                        >
-                          {showNewPassword ? (
-                            <EyeSlashIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                          ) : (
-                            <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Confirm New Password
-                      </label>
-                      <div className="mt-1 relative">
-                        <input
-                          id="confirm-password"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          required
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="block w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-10"
-                          placeholder="Confirm new password"
-                          minLength={6}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? (
-                            <EyeSlashIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                          ) : (
-                            <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Password Requirements */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
-                      <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Password Requirements:</h4>
-                      <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                        <li className={`flex items-center ${newPassword.length >= 6 ? 'text-green-600 dark:text-green-400' : ''}`}>
-                          <span className="mr-2">{newPassword.length >= 6 ? '✓' : '•'}</span>
-                          At least 6 characters long
-                        </li>
-                        <li className={`flex items-center ${newPassword === confirmPassword && newPassword.length > 0 ? 'text-green-600 dark:text-green-400' : ''}`}>
-                          <span className="mr-2">{newPassword === confirmPassword && newPassword.length > 0 ? '✓' : '•'}</span>
-                          Passwords match
-                        </li>
-                      </ul>
-                    </div>
-
                     {error && (
                       <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
                         <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -309,10 +195,10 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
                     </button>
                     <button
                       type="submit"
-                      disabled={loading || !email || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                      disabled={loading || !email}
                       className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
-                      {loading ? 'Resetting Password...' : 'Reset Password'}
+                      {loading ? 'Sending Reset Email...' : 'Send Reset Email'}
                     </button>
                   </div>
                 </form>
