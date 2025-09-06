@@ -670,7 +670,6 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
                   </div>
                 </div>
               ))}
-              ))}
             </div>
           </div>
         )}
