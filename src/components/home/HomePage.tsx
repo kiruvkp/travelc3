@@ -60,10 +60,10 @@ export default function HomePage({
 
   // Recalculate budget when currency changes or trips change
   useEffect(() => {
-    if (user && trips.length >= 0) {
+    if (user) {
       calculateTotalBudgetInSelectedCurrency();
     }
-  }, [selectedCurrency, trips, user]);
+  }, [selectedCurrency, user]);
 
   async function calculateTotalBudgetInSelectedCurrency() {
     if (!user) return;
@@ -104,7 +104,6 @@ export default function HomePage({
   const handleCurrencyChange = (newCurrency: Currency) => {
     setSelectedCurrency(newCurrency);
     setShowCurrencyDropdown(false);
-    // The useEffect will trigger recalculation automatically
   };
 
   async function fetchTrips() {
