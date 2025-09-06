@@ -316,7 +316,7 @@ export default function StatusPage({ onBack }: StatusPageProps) {
           </div>
           
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 text-center">
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">< 200ms</div>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">&lt; 200ms</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Average response time</div>
           </div>
         </div>
