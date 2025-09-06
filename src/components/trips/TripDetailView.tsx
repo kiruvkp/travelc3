@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trip, Activity, supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatCurrency, Currency } from '../../lib/currency';
+import { formatCurrency, formatCurrencyWithLocale, Currency } from '../../lib/currency';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import {
   ArrowLeftIcon,
