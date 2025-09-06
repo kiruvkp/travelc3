@@ -31,7 +31,6 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setLoading(true);
     setError('');
     clearError();
-    setResetEmailSent(false);
 
     try {
       if (mode === 'signup') {
