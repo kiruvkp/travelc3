@@ -218,26 +218,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function resetPassword(email: string) {
-    console.log('Attempting to reset password for:', email);
-    
-    try {
-      // Check if user exists first
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
 
-      if (userError || !userData) {
-        throw new Error('User with this email address not found.');
-      }
-      
-      console.log('User found, proceeding with password reset');
-      return { success: true };
-    } catch (error) {
-      console.error('Error in resetPassword function:', error);
-      throw error;
-    }
+    if (error) throw error;
   }
 
   async function updatePassword(newPassword: string) {
