@@ -103,7 +103,6 @@ export default function HomePage({
 
   const handleCurrencyChange = (newCurrency: Currency) => {
     setSelectedCurrency(newCurrency);
-    setShowCurrencyDropdown(false);
   };
 
   async function fetchTrips() {
@@ -146,6 +145,11 @@ export default function HomePage({
         completedTrips: completedCount,
         budgetByCurrency
       });
+      
+      // Trigger budget calculation after trips are loaded
+      if (tripsData.length > 0) {
+        calculateTotalBudgetInSelectedCurrency();
+      }
     } catch (error) {
       console.error('Error fetching trips:', error);
     } finally {
