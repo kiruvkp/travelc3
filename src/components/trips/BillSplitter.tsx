@@ -626,14 +626,14 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
           <div>
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Member Balances</h4>
             <div className="space-y-4">
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">{getCurrencySymbol(trip.currency as Currency)}</span>
+              {balances.map((balance) => (
                 <div key={balance.user_id} className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       {balance.avatar ? (
                         <img
                           src={balance.avatar}
-                          className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          alt={balance.name}
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (
@@ -669,6 +669,7 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
                     </div>
                   </div>
                 </div>
+              ))}
               ))}
             </div>
           </div>
