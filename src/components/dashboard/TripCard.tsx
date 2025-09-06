@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trip } from '../../lib/supabase';
-import { formatCurrency, Currency } from '../../lib/currency';
+import { formatCurrency, Currency, convertCurrency } from '../../lib/currency';
 import {
   CalendarIcon,
   MapPinIcon,
@@ -12,6 +12,7 @@ import { format, differenceInDays } from 'date-fns';
 
 interface TripCardProps {
   trip: Trip;
+  displayCurrency?: Currency;
   onClick: (trip: Trip) => void;
   onDelete?: (trip: Trip) => void;
 }
@@ -28,7 +29,7 @@ const statusLabels = {
   completed: 'Completed',
 };
 
-export default function TripCard({ trip, onClick, onDelete }: TripCardProps) {
+export default function TripCard({ trip, displayCurrency, onClick, onDelete }: TripCardProps) {
   const duration = trip.start_date && trip.end_date 
     ? differenceInDays(new Date(trip.end_date), new Date(trip.start_date)) + 1
     : null;
@@ -125,7 +126,13 @@ export default function TripCard({ trip, onClick, onDelete }: TripCardProps) {
           {trip.budget > 0 && (
             <div className="flex items-center text-sm text-gray-600">
               <CurrencyDollarIcon className="h-4 w-4 mr-2 text-gray-400" />
-              {formatCurrencyWithLocale(trip.budget, trip.currency as Currency)} budget
+              {displayCurrency && displayCurrency !== trip.currency
+                ? formatCurrency(
+                    convertCurrency(trip.budget, trip.currency as Currency, displayCurrency), 
+                    displayCurrency
+                  )
+                : formatCurrency(trip.budget, trip.currency as Currency)
+              } budget
             </div>
           )}
 

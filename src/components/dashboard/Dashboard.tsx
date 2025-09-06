@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Trip } from '../../lib/supabase';
+import { Currency, CURRENCY_SYMBOLS } from '../../lib/currency';
 import TripCard from './TripCard';
 import TripCreationModal from '../trips/TripCreationModal';
 import TripDetailView from '../trips/TripDetailView';
@@ -9,6 +10,7 @@ import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
   ArrowLeftIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 interface DashboardProps {
@@ -23,6 +25,8 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'planning' | 'active' | 'completed'>('all');
+  const [displayCurrency, setDisplayCurrency] = useState<Currency>('USD');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -163,6 +167,39 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
                     <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
                   </div>
                 </div>
+                
+                <div className="relative">
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className="flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <span className="mr-2">{CURRENCY_SYMBOLS[displayCurrency]}</span>
+                    {displayCurrency}
+                    <ChevronDownIcon className="h-4 w-4 ml-2" />
+                  </button>
+                  
+                  {showCurrencyDropdown && (
+                    <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[120px]">
+                      {Object.keys(CURRENCY_SYMBOLS).map((currency) => (
+                        <button
+                          key={currency}
+                          onClick={() => {
+                            setDisplayCurrency(currency as Currency);
+                            setShowCurrencyDropdown(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors flex items-center ${
+                            displayCurrency === currency 
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' 
+                              : 'text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          <span className="mr-2">{CURRENCY_SYMBOLS[currency as Currency]}</span>
+                          {currency}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -196,6 +233,7 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
               <TripCard
                 key={trip.id}
                 trip={trip}
+                displayCurrency={displayCurrency}
                 onClick={onViewTrip}
                 onDelete={handleDeleteTrip}
               />

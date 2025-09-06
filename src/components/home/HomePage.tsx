@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Trip, Destination } from '../../lib/supabase';
-import { formatCurrency, Currency, CURRENCY_SYMBOLS, convertCurrency } from '../../lib/currency';
+import { formatCurrency, Currency, CURRENCY_SYMBOLS, convertCurrency, getCurrencySymbol } from '../../lib/currency';
 import {
   PlusIcon,
   MapPinIcon,
@@ -400,7 +400,10 @@ export default function HomePage({
                       <span>{trip.destination}</span>
                       {trip.budget > 0 && (
                         <span className="font-medium">
-                          {formatCurrency(trip.budget, trip.currency as Currency)}
+                          {formatCurrency(
+                            convertCurrency(trip.budget, trip.currency as Currency, selectedCurrency), 
+                            selectedCurrency
+                          )}
                         </span>
                       )}
                     </div>
