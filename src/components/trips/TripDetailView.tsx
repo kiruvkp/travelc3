@@ -519,7 +519,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
                                   {dayActivities.length} activities
                                   {dayTotal > 0 && (
                                     <span className="ml-2 text-gray-500 dark:text-gray-400">
-                                      • {formatCurrency(dayTotal, currentTrip.currency as any)}
+                                      • {formatCurrency(dayTotal, currentTrip.currency as Currency)}
                                     </span>
                                   )}
                                 </p>

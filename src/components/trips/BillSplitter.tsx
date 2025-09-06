@@ -783,9 +783,9 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
                       Amount *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                        {trip.currency}
-                      </span>
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm font-medium">
+                        {getCurrencySymbol(trip.currency as Currency)}
+                      </div>
                       <input
                         type="number"
                         required
@@ -793,7 +793,7 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
                         step="0.01"
                         value={formData.amount || ''}
                         onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className="w-full pl-8 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         placeholder="0.00"
                       />
                     </div>
@@ -899,7 +899,7 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
                         
                         {formData.split_type === 'custom' && formData.participants.includes(member.user_id) && (
                           <div className="flex items-center">
-                            <span className="text-sm text-gray-500 mr-2">{trip.currency}</span>
+                            <span className="text-sm text-gray-500 mr-2">{getCurrencySymbol(trip.currency as Currency)}</span>
                             <input
                               type="number"
                               min="0"
