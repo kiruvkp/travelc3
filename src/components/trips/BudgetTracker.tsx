@@ -43,6 +43,7 @@ const expenseCategories = [
 export default function BudgetTracker({ trip, activities, onBudgetUpdate }: BudgetTrackerProps) {
   const { user } = useAuth();
   const { error: globalError, setError: setGlobalError, clearError } = useErrorHandler();
+  const { handleAsyncError } = useErrorHandler();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -143,13 +144,12 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       return;
     }
 
-    setLoading(true);
     setError('');
     
-    try {
-      setLoading(true);
-      console.log('BudgetTracker: Submitting expense form data:', formData);
-      
+    setLoading(true);
+    console.log('BudgetTracker: Submitting expense form data:', formData);
+    
+    const result = await handleAsyncError(async () => {
       if (editingExpense) {
         console.log('BudgetTracker: Updating expense:', editingExpense.id);
         
@@ -164,10 +164,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           })
           .eq('id', editingExpense.id);
 
-        if (error) {
-          console.error('BudgetTracker: Error updating expense:', error);
-          throw error;
-        }
+        if (error) throw error;
         console.log('BudgetTracker: Expense updated successfully');
       } else {
         const expenseData = {
@@ -190,47 +187,45 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
         if (error) {
           console.error('BudgetTracker: Error creating expense:', error);
-          console.error('BudgetTracker: Error details:', error.message, error.details);
           throw error;
-        } else {
-          console.log('BudgetTracker: Expense created successfully:', data);
         }
+        console.log('BudgetTracker: Expense created successfully:', data);
       }
-
+      
+      return true;
+    });
+    
+    if (result) {
       console.log('BudgetTracker: Refreshing expenses after save...');
       await fetchExpenses();
       resetForm();
       onBudgetUpdate?.();
-    } catch (error) {
-      console.error('Error saving expense:', error);
+    } else {
       setError('Failed to save expense. Please try again.');
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   }
 
   async function deleteExpense(expenseId: string) {
     if (!confirm('Are you sure you want to delete this expense?')) return;
 
-    try {
-      console.log('BudgetTracker: Deleting expense:', expenseId);
-      
+    console.log('BudgetTracker: Deleting expense:', expenseId);
+    
+    const result = await handleAsyncError(async () => {
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', expenseId);
 
-      if (error) {
-        console.error('BudgetTracker: Error deleting expense:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
+      return true;
+    });
+    
+    if (result) {
       console.log('BudgetTracker: Expense deleted successfully, refreshing...');
       await fetchExpenses();
       onBudgetUpdate?.();
-    } catch (error) {
-      console.error('BudgetTracker: Error deleting expense:', error);
-      alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
     }
   }
 
