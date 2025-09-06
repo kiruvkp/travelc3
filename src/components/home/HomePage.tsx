@@ -48,39 +48,8 @@ export default function HomePage({
   const [loading, setLoading] = useState(true);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [convertedBudget, setConvertedBudget] = useState<number>(0);
-  const [budgetLoading, setBudgetLoading] = useState(false);
-
-  // Calculate total budget in selected currency
-  const calculateTotalBudgetInSelectedCurrency = async () => {
-    setBudgetLoading(true);
-    try {
-      // Fetch all user trips to get the most up-to-date budget data
-      const { data: allTrips, error } = await supabase
-        .from('trips')
-        .select('budget, currency')
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
-      // Convert all budgets to selected currency and sum them up
-      const totalConverted = (allTrips || []).reduce((total, trip) => {
-        const convertedAmount = convertCurrency(
-          trip.budget || 0, 
-          trip.currency as Currency, 
-          selectedCurrency
-        );
-        return total + convertedAmount;
-      }, 0);
-
-      setConvertedBudget(totalConverted);
-    } catch (error) {
-      console.error('Error calculating converted budget:', error);
-      setConvertedBudget(0);
-    } finally {
-      setBudgetLoading(false);
-    }
-  };
+  const [totalBudgetConverted, setTotalBudgetConverted] = useState<number>(0);
+  const [budgetCalculating, setBudgetCalculating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -89,19 +58,62 @@ export default function HomePage({
     }
   }, [user]);
 
-  // Recalculate budget when currency changes or trips change
+  // Calculate total budget in selected currency whenever currency or trips change
   useEffect(() => {
-    if (user && trips.length > 0) {
-      calculateTotalBudgetInSelectedCurrency();
-    }
-  }, [selectedCurrency, trips, user]);
+    calculateTotalBudget();
+  }, [selectedCurrency, trips]);
 
-  // Handle currency selection
-  const handleCurrencyChange = async (newCurrency: Currency) => {
+  async function calculateTotalBudget() {
+    if (!user) return;
+    
+    setBudgetCalculating(true);
+    try {
+      console.log('Calculating total budget for currency:', selectedCurrency);
+      
+      // Fetch fresh trip data to ensure we have latest budgets
+      const { data: allTrips, error } = await supabase
+        .from('trips')
+        .select('budget, currency')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error fetching trips for budget calculation:', error);
+        throw error;
+      }
+
+      console.log('Fetched trips for budget calculation:', allTrips);
+
+      // Convert each trip's budget to selected currency and sum
+      let totalInSelectedCurrency = 0;
+      
+      (allTrips || []).forEach(trip => {
+        const originalAmount = trip.budget || 0;
+        const originalCurrency = trip.currency as Currency;
+        
+        console.log(`Converting ${originalAmount} ${originalCurrency} to ${selectedCurrency}`);
+        
+        const convertedAmount = convertCurrency(originalAmount, originalCurrency, selectedCurrency);
+        totalInSelectedCurrency += convertedAmount;
+        
+        console.log(`Converted: ${originalAmount} ${originalCurrency} = ${convertedAmount} ${selectedCurrency}`);
+      });
+
+      console.log('Total budget in', selectedCurrency, ':', totalInSelectedCurrency);
+      setTotalBudgetConverted(totalInSelectedCurrency);
+      
+    } catch (error) {
+      console.error('Error calculating total budget:', error);
+      setTotalBudgetConverted(0);
+    } finally {
+      setBudgetCalculating(false);
+    }
+  }
+
+  function handleCurrencyChange(newCurrency: Currency) {
+    console.log('Currency changed from', selectedCurrency, 'to', newCurrency);
     setSelectedCurrency(newCurrency);
     setShowCurrencyDropdown(false);
-    // The useEffect above will trigger the recalculation
-  };
+  }
 
   async function fetchTrips() {
     try {
@@ -179,7 +191,8 @@ export default function HomePage({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (showCurrencyDropdown) {
+      const target = event.target as HTMLElement;
+      if (showCurrencyDropdown && !target.closest('.currency-dropdown')) {
         setShowCurrencyDropdown(false);
       }
     }
@@ -266,15 +279,15 @@ export default function HomePage({
                         e.stopPropagation();
                         setShowCurrencyDropdown(!showCurrencyDropdown);
                       }}
-                      className="flex items-center px-3 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
+                      className="flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
                     >
-                      <span className="mr-1">{getCurrencySymbol(selectedCurrency)}</span>
+                      <span className="mr-1">{CURRENCY_SYMBOLS[selectedCurrency]}</span>
                       {selectedCurrency}
                       <ChevronDownIcon className="h-3 w-3 ml-1" />
                     </button>
                     
                     {showCurrencyDropdown && (
-                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[120px]">
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[100px]">
                         {Object.keys(CURRENCY_SYMBOLS).map((currency) => (
                           <button
                             key={currency}
@@ -282,7 +295,7 @@ export default function HomePage({
                               e.stopPropagation();
                               handleCurrencyChange(currency as Currency);
                             }}
-                            className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                            className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg flex items-center ${
                               selectedCurrency === currency 
                                 ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' 
                                 : 'text-gray-700 dark:text-gray-300'
@@ -297,13 +310,13 @@ export default function HomePage({
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {loading || budgetLoading ? (
+                  {loading || budgetCalculating ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
                       ...
                     </div>
                   ) : (
-                    formatCurrency(convertedBudget, selectedCurrency)
+                    formatCurrency(totalBudgetConverted, selectedCurrency)
                   )}
                 </p>
                 <div className="flex items-center justify-between mt-1">
@@ -444,7 +457,7 @@ export default function HomePage({
                       {trip.budget > 0 && (
                         <span className="font-medium">
                           {formatCurrency(
-                            convertCurrency(trip.budget, trip.currency as Currency, selectedCurrency), 
+                            convertCurrency(trip.budget, trip.currency as Currency, selectedCurrency),
                             selectedCurrency
                           )}
                         </span>
