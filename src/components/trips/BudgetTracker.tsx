@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, Trip, Activity, Expense } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatCurrency, Currency } from '../../lib/currency';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
+import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,
   PlusIcon,
@@ -39,6 +42,8 @@ const expenseCategories = [
 
 export default function BudgetTracker({ trip, activities, onBudgetUpdate }: BudgetTrackerProps) {
   const { user } = useAuth();
+  const { error: globalError, setError: setGlobalError, clearError } = useErrorHandler();
+  const { handleAsyncError } = useErrorHandler();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -49,6 +54,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     console.log('BudgetTracker: Component mounted/updated, fetching expenses...');
@@ -56,35 +62,28 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   }, [trip.id]);
 
   async function fetchExpenses() {
-    try {
-      setLoading(true);
-      console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
-      
-      const { data, error } = await supabase
+    setLoading(true);
+    console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
+    
+    const result = await handleAsyncError(
+      supabase
         .from('expenses')
         .select('*')
         .eq('trip_id', trip.id)
-        .order('date', { ascending: false });
-
-      if (error) {
-        console.error('BudgetTracker: Error fetching expenses:', error);
-        throw error;
-      }
-
-      console.log('BudgetTracker: Successfully fetched expenses:', data);
-      console.log('BudgetTracker: Number of expenses found:', data?.length || 0);
-      
-      if (data && data.length > 0) {
-        console.log('BudgetTracker: Sample expense data:', data[0]);
-      }
-      
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('BudgetTracker: Error in fetchExpenses:', error);
+        .order('date', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      console.log('BudgetTracker: Successfully fetched expenses:', result);
+      setExpenses(result);
+    } else {
       setExpenses([]);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   // Calculate budget metrics
@@ -138,11 +137,19 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!user) return;
+
+    if (!formData.amount || formData.amount <= 0) {
+      setError('Please enter a valid amount greater than 0');
+      return;
+    }
+
+    setError('');
     
-    try {
-      setLoading(true);
-      console.log('BudgetTracker: Submitting expense form data:', formData);
-      
+    setLoading(true);
+    console.log('BudgetTracker: Submitting expense form data:', formData);
+    
+    const result = await handleAsyncError(async () => {
       if (editingExpense) {
         console.log('BudgetTracker: Updating expense:', editingExpense.id);
         
@@ -157,10 +164,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           })
           .eq('id', editingExpense.id);
 
-        if (error) {
-          console.error('BudgetTracker: Error updating expense:', error);
-          throw error;
-        }
+        if (error) throw error;
         console.log('BudgetTracker: Expense updated successfully');
       } else {
         const expenseData = {
@@ -183,47 +187,45 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
         if (error) {
           console.error('BudgetTracker: Error creating expense:', error);
-          console.error('BudgetTracker: Error details:', error.message, error.details);
           throw error;
-        } else {
-          console.log('BudgetTracker: Expense created successfully:', data);
         }
+        console.log('BudgetTracker: Expense created successfully:', data);
       }
-
+      
+      return true;
+    });
+    
+    if (result) {
       console.log('BudgetTracker: Refreshing expenses after save...');
       await fetchExpenses();
       resetForm();
       onBudgetUpdate?.();
-    } catch (error) {
-      console.error('BudgetTracker: Error saving expense:', error);
-      alert(`Failed to save expense: ${error.message || 'Unknown error'}`);
-    } finally {
-      setLoading(false);
+    } else {
+      setError('Failed to save expense. Please try again.');
     }
+    
+    setLoading(false);
   }
 
   async function deleteExpense(expenseId: string) {
     if (!confirm('Are you sure you want to delete this expense?')) return;
 
-    try {
-      console.log('BudgetTracker: Deleting expense:', expenseId);
-      
+    console.log('BudgetTracker: Deleting expense:', expenseId);
+    
+    const result = await handleAsyncError(async () => {
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', expenseId);
 
-      if (error) {
-        console.error('BudgetTracker: Error deleting expense:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
+      return true;
+    });
+    
+    if (result) {
       console.log('BudgetTracker: Expense deleted successfully, refreshing...');
       await fetchExpenses();
       onBudgetUpdate?.();
-    } catch (error) {
-      console.error('BudgetTracker: Error deleting expense:', error);
-      alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -233,9 +235,11 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       category: 'other',
       description: '',
       date: new Date().toISOString().split('T')[0],
+      activity_id: undefined,
     });
     setShowAddExpense(false);
     setEditingExpense(null);
+    setError('');
   }
 
   function startEdit(expense: Expense) {
@@ -259,7 +263,8 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   const budgetStatus = getBudgetStatus();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <ComponentErrorBoundary componentName="Budget Tracker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -411,7 +416,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(expense.amount, trip.currency as Currency)}
+                          {formatCurrency(expense.amount, expense.currency as Currency)}
                         </span>
                         <div className="flex items-center space-x-1">
                           <button
@@ -555,6 +560,18 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           </div>
         </div>
       )}
+
+      {/* Error Toast */}
+      <ErrorToast
+        message={globalError?.message || error}
+        type="error"
+        isVisible={!!(globalError || error)}
+        onClose={() => {
+          clearError();
+          setError('');
+        }}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

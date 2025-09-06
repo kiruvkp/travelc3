@@ -1,4 +1,15 @@
 import React from 'react';
+import FeaturesPage from '../pages/FeaturesPage';
+import AboutPage from '../pages/AboutPage';
+import BlogPage from '../pages/BlogPage';
+import CareersPage from '../pages/CareersPage';
+import ContactPage from '../pages/ContactPage';
+import HelpCenterPage from '../pages/HelpCenterPage';
+import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
+import TermsOfServicePage from '../pages/TermsOfServicePage';
+import StatusPage from '../pages/StatusPage';
+import APIPage from '../pages/APIPage';
+import MobileAppPage from '../pages/MobileAppPage';
 import {
   MapPinIcon,
   SparklesIcon,
@@ -17,6 +28,40 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps) {
+  const [currentPage, setCurrentPage] = React.useState<string | null>(null);
+
+  // If a page is selected, render that page
+  if (currentPage) {
+    const pageProps = { onBack: () => setCurrentPage(null) };
+    
+    switch (currentPage) {
+      case 'features':
+        return <FeaturesPage {...pageProps} />;
+      case 'about':
+        return <AboutPage {...pageProps} />;
+      case 'blog':
+        return <BlogPage {...pageProps} />;
+      case 'careers':
+        return <CareersPage {...pageProps} />;
+      case 'contact':
+        return <ContactPage {...pageProps} />;
+      case 'help':
+        return <HelpCenterPage {...pageProps} />;
+      case 'privacy':
+        return <PrivacyPolicyPage {...pageProps} />;
+      case 'terms':
+        return <TermsOfServicePage {...pageProps} />;
+      case 'status':
+        return <StatusPage {...pageProps} />;
+      case 'api':
+        return <APIPage {...pageProps} />;
+      case 'mobile':
+        return <MobileAppPage {...pageProps} />;
+      default:
+        return null;
+    }
+  }
+
   const features = [
     {
       icon: SparklesIcon,
@@ -86,13 +131,28 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                 <span className="text-white text-xl font-bold">T</span>
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">TravelPlanner</h1>
+                <h3 className="text-xl font-bold">Globe Go</h3>
               </div>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</a>
-              <a href="#testimonials" className="text-gray-600 hover:text-gray-900 transition-colors">Reviews</a>
+              <button 
+                onClick={() => setCurrentPage('features')}
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => {
+                  const testimonialsSection = document.getElementById('testimonials');
+                  if (testimonialsSection) {
+                    testimonialsSection.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Reviews
+              </button>
               <button
                 onClick={onSignIn}
                 className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -360,7 +420,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                   <span className="text-white text-xl font-bold">T</span>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-xl font-bold">TravelPlanner</h3>
+                  <h1 className="text-xl font-bold text-gray-900">Globe Go</h1>
                 </div>
               </div>
               <p className="text-gray-400">
@@ -371,30 +431,29 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Mobile App</a></li>
+                <li><button onClick={() => setCurrentPage('features')} className="hover:text-white transition-colors">Features</button></li>
+                <li><button onClick={() => setCurrentPage('api')} className="hover:text-white transition-colors">API</button></li>
+                <li><button onClick={() => setCurrentPage('mobile')} className="hover:text-white transition-colors">Mobile App</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                <li><button onClick={() => setCurrentPage('about')} className="hover:text-white transition-colors">About</button></li>
+                <li><button onClick={() => setCurrentPage('blog')} className="hover:text-white transition-colors">Blog</button></li>
+                <li><button onClick={() => setCurrentPage('careers')} className="hover:text-white transition-colors">Careers</button></li>
+                <li><button onClick={() => setCurrentPage('contact')} className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+                <li><button onClick={() => setCurrentPage('help')} className="hover:text-white transition-colors">Help Center</button></li>
+                <li><button onClick={() => setCurrentPage('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => setCurrentPage('terms')} className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => setCurrentPage('status')} className="hover:text-white transition-colors">Status</button></li>
               </ul>
             </div>
           </div>
