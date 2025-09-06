@@ -3,6 +3,7 @@ import { supabase, Trip, Activity, Expense } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,

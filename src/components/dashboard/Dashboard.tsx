@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ErrorToast from '../common/ErrorToast';
+import ErrorToast from '../common/ErrorToast';
 import { supabase, Trip } from '../../lib/supabase';
 import { Currency, CURRENCY_SYMBOLS } from '../../lib/currency';
 import TripCard from './TripCard';

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ErrorToast from '../common/ErrorToast';
+import ErrorToast from '../common/ErrorToast';
 import { formatCurrency, formatCurrencyWithLocale, Currency } from '../../lib/currency';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import {
