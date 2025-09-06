@@ -423,7 +423,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {formatCurrencyWithLocale(expense.amount, expense.currency as Currency)}
+                          {formatCurrency(expense.amount, expense.currency as Currency)}
                         </span>
                         <div className="flex items-center space-x-1">
                           <button
