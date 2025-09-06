@@ -13,6 +13,7 @@ import {
   ArrowRightIcon,
   GlobeAltIcon,
   ChevronDownIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 
 interface HomePageProps {
