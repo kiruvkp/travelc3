@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase, Trip, Activity, Expense } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,
@@ -39,6 +41,7 @@ const expenseCategories = [
 
 export default function BudgetTracker({ trip, activities, onBudgetUpdate }: BudgetTrackerProps) {
   const { user } = useAuth();
+  const { error: globalError, setError: setGlobalError, clearError } = useErrorHandler();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddExpense, setShowAddExpense] = useState(false);
@@ -57,35 +60,28 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   }, [trip.id]);
 
   async function fetchExpenses() {
-    try {
-      setLoading(true);
-      console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
-      
-      const { data, error } = await supabase
+    setLoading(true);
+    console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
+    
+    const result = await handleAsyncError(
+      supabase
         .from('expenses')
         .select('*')
         .eq('trip_id', trip.id)
-        .order('date', { ascending: false });
-
-      if (error) {
-        console.error('BudgetTracker: Error fetching expenses:', error);
-        throw error;
-      }
-
-      console.log('BudgetTracker: Successfully fetched expenses:', data);
-      console.log('BudgetTracker: Number of expenses found:', data?.length || 0);
-      
-      if (data && data.length > 0) {
-        console.log('BudgetTracker: Sample expense data:', data[0]);
-      }
-      
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('BudgetTracker: Error in fetchExpenses:', error);
+        .order('date', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      console.log('BudgetTracker: Successfully fetched expenses:', result);
+      setExpenses(result);
+    } else {
       setExpenses([]);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   // Calculate budget metrics
@@ -271,7 +267,8 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   const budgetStatus = getBudgetStatus();
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <ComponentErrorBoundary componentName="Budget Tracker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -568,20 +565,17 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
         </div>
       )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-          <div className="flex items-center">
-            <span className="mr-2">{error}</span>
-            <button
-              onClick={() => setError('')}
-              className="text-white hover:text-gray-200"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Error Toast */}
+      <ErrorToast
+        message={globalError?.message || error}
+        type="error"
+        isVisible={!!(globalError || error)}
+        onClose={() => {
+          clearError();
+          setError('');
+        }}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

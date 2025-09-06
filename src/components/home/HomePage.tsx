@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { supabase, Trip, Destination } from '../../lib/supabase';
 import { formatCurrency, Currency, CURRENCY_SYMBOLS, convertCurrency, getCurrencySymbol } from '../../lib/currency';
 import {
@@ -38,6 +41,7 @@ export default function HomePage({
   onViewAllTrips 
 }: HomePageProps) {
   const { user, profile } = useAuth();
+  const { error, setError, clearError, handleAsyncError } = useErrorHandler();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [showDestinations, setShowDestinations] = useState(false);
@@ -108,17 +112,21 @@ export default function HomePage({
   };
 
   async function fetchTrips() {
-    try {
-      const { data, error } = await supabase
+    const result = await handleAsyncError(
+      supabase
         .from('trips')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-      
-      const tripsData = data || [];
+        .limit(6)
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      const tripsData = result;
       setTrips(tripsData);
       
       // Calculate stats
@@ -152,11 +160,8 @@ export default function HomePage({
       if (tripsData.length > 0) {
         calculateTotalBudgetInSelectedCurrency();
       }
-    } catch (error) {
-      console.error('Error fetching trips:', error);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   async function fetchDestinations() {
@@ -204,7 +209,8 @@ export default function HomePage({
   const featuredDestinations = destinations.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <ComponentErrorBoundary componentName="Home Page">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -640,6 +646,15 @@ export default function HomePage({
           </div>
         </div>
       )}
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={error?.message || ''}
+        type="error"
+        isVisible={!!error}
+        onClose={clearError}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

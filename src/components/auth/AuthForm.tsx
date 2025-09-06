@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface AuthFormProps {
@@ -9,6 +12,7 @@ interface AuthFormProps {
 
 export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const { signIn, signUp, resetPassword } = useAuth();
+  const { error: globalError, setError: setGlobalError, clearError } = useErrorHandler();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -22,6 +26,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    clearError();
     setResetEmailSent(false);
 
     try {
@@ -37,6 +42,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       }
     } catch (error: any) {
       console.error('Password reset error:', error);
+      setGlobalError(error);
       if (error.message?.includes('Supabase is not configured')) {
         setError('Email service not configured. Please set up Supabase credentials.');
       } else if (error.message?.includes('User not found')) {
@@ -96,7 +102,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <ComponentErrorBoundary componentName="Authentication Form">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
@@ -301,6 +308,15 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
           </div>
         </form>
       </div>
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={globalError?.message || ''}
+        type="error"
+        isVisible={!!globalError}
+        onClose={clearError}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

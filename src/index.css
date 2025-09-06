@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+/* Error boundary animations */
+.error-boundary-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+.toast-enter {
+  animation: slideIn 0.3s ease-out;
+}
+  from { opacity: 0; transform: translateY(10px); }
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+  to { opacity: 1; transform: translateY(0); }
+.dark .loading-shimmer {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+/* Error state styles */
+.error-state {
+  @apply bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4;
+}
+.error-text {
+  @apply text-red-600 dark:text-red-400;
+}
+/* Success state styles */
+.success-state {
+  @apply bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4;
+}
+.success-text {
+  @apply text-green-600 dark:text-green-400;
+}

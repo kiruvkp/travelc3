@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import AsyncErrorBoundary from './components/common/AsyncErrorBoundary';
+import NetworkErrorBoundary from './components/common/NetworkErrorBoundary';
+import PageErrorBoundary from './components/common/PageErrorBoundary';
 import AuthForm from './components/auth/AuthForm';
 import LandingPage from './components/landing/LandingPage';
 import HomePage from './components/home/HomePage';
@@ -11,6 +15,15 @@ import TripDetailView from './components/trips/TripDetailView';
 import { Trip } from './lib/supabase';
 
 export default function App() {
+  const handleGlobalError = (error: Error, errorInfo?: React.ErrorInfo) => {
+    console.error('Global error caught:', error, errorInfo);
+    
+    // In production, send to error tracking service
+    if (process.env.NODE_ENV === 'production') {
+      // Example: Sentry.captureException(error, { extra: errorInfo });
+    }
+  };
+
   function AppContent() {
     const { user, loading } = useAuth();
     const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
@@ -31,10 +44,10 @@ export default function App() {
 
     if (loading) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading TravelPlanner...</p>
           </div>
         </div>
       );
@@ -43,20 +56,26 @@ export default function App() {
     if (!user) {
       if (showLanding) {
         return (
-          <LandingPage
-            onGetStarted={() => {
-              setShowLanding(false);
-              setAuthMode('signup');
-            }}
-            onSignIn={() => {
-              setShowLanding(false);
-              setAuthMode('signin');
-            }}
-          />
+          <PageErrorBoundary pageName="Landing Page">
+            <LandingPage
+              onGetStarted={() => {
+                setShowLanding(false);
+                setAuthMode('signup');
+              }}
+              onSignIn={() => {
+                setShowLanding(false);
+                setAuthMode('signin');
+              }}
+            />
+          </PageErrorBoundary>
         );
       }
       
-      return <AuthForm mode={authMode} onModeChange={setAuthMode} />;
+      return (
+        <PageErrorBoundary pageName="Authentication">
+          <AuthForm mode={authMode} onModeChange={setAuthMode} />
+        </PageErrorBoundary>
+      );
     }
 
     const handleViewTrip = (trip: Trip) => {
@@ -80,60 +99,78 @@ export default function App() {
     const renderCurrentView = () => {
       switch (currentView) {
         case 'dashboard':
-          return <Dashboard onBackToHome={handleBackToHome} onViewTrip={handleViewTrip} />;
+          return (
+            <PageErrorBoundary pageName="Dashboard">
+              <Dashboard onBackToHome={handleBackToHome} onViewTrip={handleViewTrip} />
+            </PageErrorBoundary>
+          );
         case 'trip':
           return selectedTrip ? (
-            <TripDetailView
-              trip={selectedTrip}
-              onBack={handleBackToHome}
-              onTripUpdated={(updatedTrip) => setSelectedTrip(updatedTrip)}
-            />
+            <PageErrorBoundary pageName="Trip Details">
+              <TripDetailView
+                trip={selectedTrip}
+                onBack={handleBackToHome}
+                onTripUpdated={(updatedTrip) => setSelectedTrip(updatedTrip)}
+              />
+            </PageErrorBoundary>
           ) : null;
         default:
           return (
-            <HomePage
-              onCreateTrip={() => setShowCreateTrip(true)}
-              onCreateTripWithDestination={handleCreateTripWithDestination}
-              onViewTrip={handleViewTrip}
-              onViewAllTrips={handleViewAllTrips}
-            />
+            <PageErrorBoundary pageName="Home">
+              <HomePage
+                onCreateTrip={() => setShowCreateTrip(true)}
+                onCreateTripWithDestination={handleCreateTripWithDestination}
+                onViewTrip={handleViewTrip}
+                onViewAllTrips={handleViewAllTrips}
+              />
+            </PageErrorBoundary>
           );
       }
     };
 
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header 
-          onCreateTrip={() => setShowCreateTrip(true)}
-          onHome={handleBackToHome}
-          currentView={currentView}
-        />
+        <PageErrorBoundary pageName="Header">
+          <Header 
+            onCreateTrip={() => setShowCreateTrip(true)}
+            onHome={handleBackToHome}
+            currentView={currentView}
+          />
+        </PageErrorBoundary>
         {renderCurrentView()}
         
         {showCreateTrip && (
-          <TripCreationModal
-            preSelectedDestination={preSelectedDestination}
-            onClose={() => setShowCreateTrip(false)}
-            onTripCreated={(trip) => {
-              setShowCreateTrip(false);
-              setPreSelectedDestination(null);
-              handleViewTrip(trip);
-            }}
-            onCancel={() => {
-              setShowCreateTrip(false);
-              setPreSelectedDestination(null);
-            }}
-          />
+          <PageErrorBoundary pageName="Trip Creation">
+            <TripCreationModal
+              preSelectedDestination={preSelectedDestination}
+              onClose={() => setShowCreateTrip(false)}
+              onTripCreated={(trip) => {
+                setShowCreateTrip(false);
+                setPreSelectedDestination(null);
+                handleViewTrip(trip);
+              }}
+              onCancel={() => {
+                setShowCreateTrip(false);
+                setPreSelectedDestination(null);
+              }}
+            />
+          </PageErrorBoundary>
         )}
       </div>
     );
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary onError={handleGlobalError}>
+      <NetworkErrorBoundary>
+        <AsyncErrorBoundary onError={handleGlobalError}>
+          <ThemeProvider>
+            <AuthProvider>
+              <AppContent />
+            </AuthProvider>
+          </ThemeProvider>
+        </AsyncErrorBoundary>
+      </NetworkErrorBoundary>
+    </ErrorBoundary>
   );
 }

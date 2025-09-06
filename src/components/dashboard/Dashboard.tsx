@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { supabase, Trip } from '../../lib/supabase';
 import { Currency, CURRENCY_SYMBOLS } from '../../lib/currency';
 import TripCard from './TripCard';
@@ -20,6 +23,7 @@ interface DashboardProps {
 
 export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) {
   const { user } = useAuth();
+  const { error, setError, clearError, handleAsyncError } = useErrorHandler();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -35,22 +39,25 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
   }, [user]);
 
   async function fetchTrips() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
+    setLoading(true);
+    const result = await handleAsyncError(
+      supabase
         .from('trips')
         .select('*')
         .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTrips(data || []);
-    } catch (error) {
-      console.error('Error fetching trips:', error);
-      setTrips([]); // Set empty array on error to prevent infinite loading
-    } finally {
-      setLoading(false);
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      setTrips(result);
+    } else {
+      setTrips([]); // Set empty array on error
     }
+    setLoading(false);
   }
 
   async function handleDeleteTrip(trip: Trip) {
@@ -88,7 +95,8 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <ComponentErrorBoundary componentName="Dashboard">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 dark:from-blue-800 dark:via-purple-800 dark:to-indigo-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -249,6 +257,15 @@ export default function Dashboard({ onBackToHome, onViewTrip }: DashboardProps) 
           onTripCreated={handleTripCreated}
         />
       )}
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={error?.message || ''}
+        type="error"
+        isVisible={!!error}
+        onClose={clearError}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

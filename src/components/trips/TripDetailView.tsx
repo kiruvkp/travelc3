@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Trip, Activity, supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { formatCurrency, formatCurrencyWithLocale, Currency } from '../../lib/currency';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import {
@@ -37,6 +40,7 @@ interface TripDetailViewProps {
 
 export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDetailViewProps) {
   const { user } = useAuth();
+  const { error, setError, clearError, handleAsyncError } = useErrorHandler();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddActivity, setShowAddActivity] = useState(false);
@@ -62,22 +66,24 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
   }, [currentTrip.id]);
 
   async function fetchActivities() {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
+    setLoading(true);
+    const result = await handleAsyncError(
+      supabase
         .from('activities')
         .select('*')
         .eq('trip_id', currentTrip.id)
         .order('day_number')
-        .order('order_index');
-
-      if (error) throw error;
-      setActivities(data || []);
-    } catch (error) {
-      console.error('Error fetching activities:', error);
-    } finally {
-      setLoading(false);
+        .order('order_index')
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      setActivities(result);
     }
+    setLoading(false);
   }
 
   async function handleDragEnd(result: DropResult) {
@@ -256,7 +262,8 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
   const budgetUsed = currentTrip.budget > 0 ? (totalExpenses / currentTrip.budget) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <ComponentErrorBoundary componentName="Trip Detail View">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -677,6 +684,15 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
           onTripUpdated={handleTripUpdated}
         />
       )}
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={error?.message || ''}
+        type="error"
+        isVisible={!!error}
+        onClose={clearError}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

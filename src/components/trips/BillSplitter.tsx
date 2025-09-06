@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, Trip } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,
@@ -94,6 +97,7 @@ const expenseCategories = [
 
 export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) {
   const { user } = useAuth();
+  const { error: globalError, setError: setGlobalError, clearError, handleAsyncError } = useErrorHandler();
   const [expenses, setExpenses] = useState<SharedExpense[]>([]);
   const [members, setMembers] = useState<TripMember[]>([]);
   const [balances, setBalances] = useState<Balance[]>([]);
@@ -126,41 +130,41 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
   }, [expenses, members]);
 
   async function fetchExpenses() {
-    try {
-      setLoading(true);
-      
-      // Check if Supabase is properly configured
-      if (!import.meta.env.VITE_SUPABASE_URL || 
-          import.meta.env.VITE_SUPABASE_URL === 'your_supabase_url') {
-        console.warn('Supabase not configured - using mock data for shared expenses');
-        // Set mock shared expenses data for demonstration
-        const mockSharedExpenses = [
-          {
-            id: 'mock-shared-1',
-            trip_id: trip.id,
-            title: 'Group dinner',
-            amount: 120.00,
-            currency: trip.currency,
-            paid_by: user?.id || 'mock-user',
-            split_type: 'equal' as const,
-            participants: [user?.id || 'mock-user'],
-            splits: { [user?.id || 'mock-user']: 120.00 },
-            date: new Date().toISOString().split('T')[0],
-            description: 'Dinner at seafood restaurant',
-            created_at: new Date().toISOString(),
-            paid_by_profile: {
-              full_name: 'You',
-              email: user?.email || 'demo@example.com',
-              avatar_url: undefined,
-            }
+    setLoading(true);
+    
+    // Check if Supabase is properly configured
+    if (!import.meta.env.VITE_SUPABASE_URL || 
+        import.meta.env.VITE_SUPABASE_URL === 'your_supabase_url') {
+      console.warn('Supabase not configured - using mock data for shared expenses');
+      // Set mock shared expenses data for demonstration
+      const mockSharedExpenses = [
+        {
+          id: 'mock-shared-1',
+          trip_id: trip.id,
+          title: 'Group dinner',
+          amount: 120.00,
+          currency: trip.currency,
+          paid_by: user?.id || 'mock-user',
+          split_type: 'equal' as const,
+          participants: [user?.id || 'mock-user'],
+          splits: { [user?.id || 'mock-user']: 120.00 },
+          date: new Date().toISOString().split('T')[0],
+          description: 'Dinner at seafood restaurant',
+          created_at: new Date().toISOString(),
+          paid_by_profile: {
+            full_name: 'You',
+            email: user?.email || 'demo@example.com',
+            avatar_url: undefined,
           }
-        ];
-        setExpenses(mockSharedExpenses);
-        setLoading(false);
-        return;
-      }
-      
-      const { data, error } = await supabase
+        }
+      ];
+      setExpenses(mockSharedExpenses);
+      setLoading(false);
+      return;
+    }
+    
+    const result = await handleAsyncError(
+      supabase
         .from('shared_expenses')
         .select(`
           *,
@@ -171,16 +175,19 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
           )
         `)
         .eq('trip_id', trip.id)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('Error fetching shared expenses:', error);
-      setExpenses([]); // Set empty array on error to prevent infinite loading
-    } finally {
-      setLoading(false);
+        .order('date', { ascending: false })
+        .then(({ data, error }) => {
+          if (error) throw error;
+          return data || [];
+        })
+    );
+    
+    if (result) {
+      setExpenses(result);
+    } else {
+      setExpenses([]);
     }
+    setLoading(false);
   }
 
   async function fetchMembers() {
@@ -424,7 +431,8 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
   const userOwed = settlements.filter(s => s.to === user?.id).reduce((sum, s) => sum + s.amount, 0);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <ComponentErrorBoundary componentName="Bill Splitter">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
@@ -1018,6 +1026,15 @@ export default function BillSplitter({ trip, onBillUpdate }: BillSplitterProps) 
           </div>
         </div>
       )}
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={globalError?.message || ''}
+        type="error"
+        isVisible={!!globalError}
+        onClose={clearError}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }

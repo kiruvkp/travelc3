@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { openAIService } from '../../lib/openai';
+import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import ErrorToast from '../common/ErrorToast';
 import { supabase, TripNote, Activity } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -43,6 +46,7 @@ export default function ComprehensiveAIPlanner({
   budget
 }: ComprehensiveAIPlannerProps) {
   const { user } = useAuth();
+  const { error: globalError, setError: setGlobalError, clearError, handleAsyncError } = useErrorHandler();
   const [loading, setLoading] = useState(false);
   const [itinerary, setItinerary] = useState<DayPlan[]>([]);
   const [recommendations, setRecommendations] = useState<string>('');
@@ -221,21 +225,23 @@ export default function ComprehensiveAIPlanner({
 
   async function generateComprehensivePlan() {
     if (!openAIService.isConfigured()) {
-      setError('OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your environment variables.');
+      setGlobalError(new Error('OpenAI API key not configured. Please add VITE_OPENAI_API_KEY to your environment variables.'));
       return;
     }
 
     setLoading(true);
-    setError('');
+    clearError();
     
-    try {
-      // Generate comprehensive plan
-      const result = await openAIService.generateComprehensivePlan(
+    const result = await handleAsyncError(
+      openAIService.generateComprehensivePlan(
         destination, 
         days,
         interests, 
         budget
-      );
+      )
+    );
+    
+    if (result) {
       
       // Parse the result to extract structured data
       const parsed = parseItinerary(result);
@@ -250,11 +256,8 @@ export default function ComprehensiveAIPlanner({
       
       // Load existing user notes
       await loadUserNotes();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate comprehensive plan');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   function parseItinerary(aiResponse: string): { itinerary: DayPlan[], recommendations: string } {
@@ -382,7 +385,8 @@ export default function ComprehensiveAIPlanner({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <ComponentErrorBoundary componentName="AI Planner">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <SparklesIcon className="h-6 w-6 text-purple-600 mr-3" />
@@ -622,6 +626,18 @@ export default function ComprehensiveAIPlanner({
           <p className="text-gray-400">Click "Generate Complete Plan" to get started!</p>
         </div>
       )}
+      
+      {/* Error Toast */}
+      <ErrorToast
+        message={globalError?.message || error}
+        type="error"
+        isVisible={!!(globalError || error)}
+        onClose={() => {
+          clearError();
+          setError('');
+        }}
+      />
     </div>
+    </ComponentErrorBoundary>
   );
 }
