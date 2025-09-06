@@ -239,6 +239,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function updatePassword(newPassword: string) {
+    console.log('Attempting to update password...');
+    
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      console.log('Password update response:', { data, error });
+
+      if (error) {
+        console.error('Password update error from Supabase:', error);
+        throw error;
+      }
+      
+      console.log('Password updated successfully');
+      return data;
+    } catch (error) {
+      console.error('Error in updatePassword function:', error);
+      throw error;
+    }
+  }
   const value = {
     user,
     profile,
@@ -249,6 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     updateProfile,
     resetPassword,
+    updatePassword,
   };
 
   return (
