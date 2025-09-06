@@ -56,8 +56,8 @@ export default function HelpCenterPage({ onBack }: HelpCenterPageProps) {
     },
     {
       id: '5',
-      question: 'Can I use TravelPlanner offline?',
-      answer: 'While TravelPlanner requires an internet connection for AI features and real-time collaboration, you can view your saved trips offline once they\'re loaded.',
+      question: 'Can I use Globe Go offline?',
+      answer: 'While Globe Go requires an internet connection for AI features and real-time collaboration, you can view your saved trips offline once they\'re loaded.',
       category: 'Getting Started'
     },
     {
@@ -69,7 +69,7 @@ export default function HelpCenterPage({ onBack }: HelpCenterPageProps) {
     {
       id: '7',
       question: 'What currencies are supported?',
-      answer: 'TravelPlanner supports USD, EUR, GBP, JPY, CAD, AUD, and INR. You can set different currencies for different trips and view budget summaries in your preferred currency.',
+      answer: 'Globe Go supports USD, EUR, GBP, JPY, CAD, AUD, and INR. You can set different currencies for different trips and view budget summaries in your preferred currency.',
       category: 'Budget & Expenses'
     },
     {
@@ -83,11 +83,11 @@ export default function HelpCenterPage({ onBack }: HelpCenterPageProps) {
   const guides: GuideItem[] = [
     {
       id: '1',
-      title: 'Getting Started with TravelPlanner',
+      title: 'Getting Started with Globe Go',
       description: 'Learn the basics of creating trips, adding activities, and using AI recommendations.',
       category: 'Getting Started',
       readTime: '5 min',
-      content: 'Complete guide to getting started with TravelPlanner...'
+      content: 'Complete guide to getting started with Globe Go...'
     },
     {
       id: '2',

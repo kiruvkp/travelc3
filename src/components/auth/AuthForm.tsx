@@ -198,7 +198,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        {!showForgotPassword && (
+          <form className="space-y-6" onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -306,7 +307,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
               }
             </button>
           </div>
-        </form>
+          </form>
+        )}
       </div>
       
       {/* Error Toast */}
