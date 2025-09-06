@@ -102,6 +102,7 @@ export default function HomePage({
     setShowCurrencyDropdown(false);
     // The useEffect above will trigger the recalculation
   };
+
   async function fetchTrips() {
     try {
       const { data, error } = await supabase
@@ -252,7 +253,7 @@ export default function HomePage({
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900 rounded-xl flex items-center justify-center">
-                <span className="text-yellow-600 font-bold text-lg">
+                <span className="text-yellow-600 dark:text-yellow-400 font-bold text-lg">
                   {getCurrencySymbol(selectedCurrency)}
                 </span>
               </div>
@@ -265,7 +266,7 @@ export default function HomePage({
                         e.stopPropagation();
                         setShowCurrencyDropdown(!showCurrencyDropdown);
                       }}
-                      className="flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
+                      className="flex items-center px-3 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
                     >
                       <span className="mr-1">{getCurrencySymbol(selectedCurrency)}</span>
                       {selectedCurrency}
@@ -279,7 +280,7 @@ export default function HomePage({
                             key={currency}
                             onClick={(e) => {
                               e.stopPropagation();
-                             handleCurrencyChange(currency as Currency);
+                              handleCurrencyChange(currency as Currency);
                             }}
                             className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
                               selectedCurrency === currency 
