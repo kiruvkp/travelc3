@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Trip, Destination } from '../../lib/supabase';
-import { formatCurrency, Currency, CURRENCY_SYMBOLS } from '../../lib/currency';
+import { formatCurrency, Currency, CURRENCY_SYMBOLS, convertCurrency } from '../../lib/currency';
 import {
   PlusIcon,
   MapPinIcon,
@@ -12,6 +12,7 @@ import {
   EyeIcon,
   ArrowRightIcon,
   GlobeAltIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 interface HomePageProps {
@@ -44,6 +45,8 @@ export default function HomePage({
     budgetByCurrency: {}
   });
   const [loading, setLoading] = useState(true);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -118,31 +121,43 @@ export default function HomePage({
     const currencies = Object.keys(budgetByCurrency).filter(currency => budgetByCurrency[currency] > 0);
     
     if (currencies.length === 0) {
-      return '$0';
+      return formatCurrency(0, selectedCurrency);
     }
     
-    if (currencies.length === 1) {
-      const currency = currencies[0] as Currency;
-      return formatCurrency(budgetByCurrency[currency], currency);
-    }
+    // Convert all currencies to the selected currency and sum them
+    let totalInSelectedCurrency = 0;
+    currencies.forEach(currency => {
+      const amount = budgetByCurrency[currency];
+      const convertedAmount = convertCurrency(amount, currency as Currency, selectedCurrency);
+      totalInSelectedCurrency += convertedAmount;
+    });
     
-    // Multiple currencies - show the largest one with a "+" indicator
-    const sortedCurrencies = currencies.sort((a, b) => budgetByCurrency[b] - budgetByCurrency[a]);
-    const primaryCurrency = sortedCurrencies[0] as Currency;
-    const primaryAmount = budgetByCurrency[primaryCurrency];
-    
-    return `${formatCurrency(primaryAmount, primaryCurrency)}${currencies.length > 1 ? ' +' : ''}`;
+    return formatCurrency(totalInSelectedCurrency, selectedCurrency);
   };
 
-  const getMultiCurrencyTooltip = (budgetByCurrency: Record<string, number>) => {
+  const getOriginalCurrencyBreakdown = (budgetByCurrency: Record<string, number>) => {
     const currencies = Object.keys(budgetByCurrency).filter(currency => budgetByCurrency[currency] > 0);
     
-    if (currencies.length <= 1) return '';
+    if (currencies.length === 0) return 'No budget set';
     
     return currencies
       .map(currency => `${formatCurrency(budgetByCurrency[currency], currency as Currency)}`)
       .join(', ');
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (showCurrencyDropdown) {
+        setShowCurrencyDropdown(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCurrencyDropdown]);
 
   const recentTrips = trips.slice(0, 3);
   const featuredDestinations = destinations.slice(0, 6);
@@ -210,18 +225,60 @@ export default function HomePage({
                 <GlobeAltIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Budget</p>
-                <p 
-                  className="text-2xl font-bold text-gray-900 dark:text-white"
-                  title={getMultiCurrencyTooltip(stats.budgetByCurrency)}
-                >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Budget</p>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                      className="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    >
+                      {selectedCurrency}
+                      <ChevronDownIcon className="h-3 w-3 ml-1" />
+                    </button>
+                    
+                    {showCurrencyDropdown && (
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[100px]">
+                        {Object.keys(CURRENCY_SYMBOLS).map((currency) => (
+                          <button
+                            key={currency}
+                            onClick={() => {
+                              setSelectedCurrency(currency as Currency);
+                              setShowCurrencyDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                              selectedCurrency === currency 
+                                ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' 
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {CURRENCY_SYMBOLS[currency as Currency]} {currency}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {loading ? '...' : formatMultiCurrencyBudget(stats.budgetByCurrency)}
                 </p>
-                {Object.keys(stats.budgetByCurrency).length > 1 && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {Object.keys(stats.budgetByCurrency).length} currencies
+                <div className="flex items-center justify-between mt-1">
+                  <p 
+                    className="text-xs text-gray-500 dark:text-gray-400 cursor-help"
+                    title={getOriginalCurrencyBreakdown(stats.budgetByCurrency)}
+                  >
+                    {Object.keys(stats.budgetByCurrency).length > 1 
+                      ? `From ${Object.keys(stats.budgetByCurrency).length} currencies`
+                      : Object.keys(stats.budgetByCurrency).length === 1 
+                        ? 'Single currency'
+                        : 'No budget set'
+                    }
                   </p>
-                )}
+                  {Object.keys(stats.budgetByCurrency).length > 1 && (
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
+                      Converted
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
