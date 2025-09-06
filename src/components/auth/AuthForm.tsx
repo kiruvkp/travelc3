@@ -150,6 +150,18 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
             </div>
           )}
 
+          {mode === 'signin' && (
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
