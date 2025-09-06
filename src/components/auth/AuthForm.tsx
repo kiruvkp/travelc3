@@ -37,7 +37,11 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       }
     } catch (error: any) {
       // Handle specific authentication errors
-      if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid email or password')) {
+      if (error.message?.includes('Supabase is not configured')) {
+        setError('Database connection not configured. Please set up Supabase credentials in the .env file and restart the server.');
+      } else if (error.message?.includes('Failed to fetch')) {
+        setError('Unable to connect to the authentication service. Please check your internet connection and Supabase configuration.');
+      } else if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid email or password')) {
         setError('Invalid email or password. Please check your credentials and try again.');
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link to verify your account before signing in.');

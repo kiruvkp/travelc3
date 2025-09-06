@@ -166,6 +166,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signIn(email: string, password: string) {
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey || 
+        supabaseUrl.includes('placeholder') || 
+        supabaseKey.includes('placeholder') ||
+        supabaseUrl === 'https://your-project-id.supabase.co' ||
+        supabaseKey === 'your-anon-key-here') {
+      throw new Error('Supabase is not configured. Please add your Supabase URL and API key to the .env file.');
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -175,6 +187,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signOut() {
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey || 
+        supabaseUrl.includes('placeholder') || 
+        supabaseKey.includes('placeholder') ||
+        supabaseUrl === 'https://your-project-id.supabase.co' ||
+        supabaseKey === 'your-anon-key-here') {
+      throw new Error('Supabase is not configured. Please add your Supabase URL and API key to the .env file.');
+    }
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   }
