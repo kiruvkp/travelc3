@@ -22,7 +22,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setError('');
 
     try {
-      await resetPassword(resetEmail);
+      if (mode === 'signup') {
+        await signUp(email, password, fullName);
         onModeChange('signin');
         // Clear form
         setEmail('');
