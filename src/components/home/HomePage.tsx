@@ -14,6 +14,7 @@ import {
   GlobeAltIcon,
   ChevronDownIcon,
   CurrencyDollarIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 interface HomePageProps {
@@ -39,6 +40,7 @@ export default function HomePage({
   const { user, profile } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [showDestinations, setShowDestinations] = useState(false);
   const [stats, setStats] = useState<TripStats>({
     totalTrips: 0,
     upcomingTrips: 0,
@@ -357,7 +359,7 @@ export default function HomePage({
             </button>
 
             <button
-              onClick={() => {/* Handle explore destinations */}}
+              onClick={() => setShowDestinations(true)}
               className="group bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               <div className="h-12 w-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
@@ -543,6 +545,101 @@ export default function HomePage({
           </div>
         </div>
       </div>
+
+      {/* Explore Destinations Modal */}
+      {showDestinations && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center">
+                <GlobeAltIcon className="h-6 w-6 text-green-600 mr-3" />
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Explore Destinations</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Discover amazing places to visit</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDestinations(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Destinations Grid */}
+            <div className="p-6">
+              {destinations.length === 0 ? (
+                <div className="text-center py-12">
+                  <GlobeAltIcon className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No destinations available</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Check back later for curated destination recommendations</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {destinations.map((destination) => (
+                    <div
+                      key={destination.id}
+                      onClick={() => {
+                        setShowDestinations(false);
+                        onCreateTripWithDestination(destination);
+                      }}
+                      className="group bg-gray-50 dark:bg-gray-700 rounded-xl overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:scale-105 border border-gray-200 dark:border-gray-600"
+                    >
+                      <div className="relative h-48">
+                        <img
+                          src={destination.image_url || 'https://images.pexels.com/photos/1371360/pexels-photo-1371360.jpeg'}
+                          alt={destination.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-opacity" />
+                        <div className="absolute bottom-4 left-4 text-white">
+                          <h3 className="font-semibold text-lg">{destination.name}</h3>
+                          {destination.country && (
+                            <p className="text-sm opacity-90">{destination.country}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="p-4">
+                        {destination.description && (
+                          <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                            {destination.description}
+                          </p>
+                        )}
+                        
+                        {destination.best_time_to_visit && (
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">
+                            Best time: {destination.best_time_to_visit}
+                          </p>
+                        )}
+                        
+                        {destination.popular_activities && destination.popular_activities.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {destination.popular_activities.slice(0, 3).map((activity, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                              >
+                                {activity}
+                              </span>
+                            ))}
+                            {destination.popular_activities.length > 3 && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                +{destination.popular_activities.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
