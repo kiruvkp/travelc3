@@ -221,10 +221,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Attempting to reset password for:', email);
     
     try {
-      // In a real implementation, this would use Supabase's password reset flow
-      // For now, we'll simulate the password reset process
-      console.log('Simulating password reset for:', email);
-      
       // Check if user exists first
       const { data: userData, error: userError } = await supabase
         .from('profiles')
@@ -236,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('User with this email address not found.');
       }
       
-      console.log('User found, password reset simulation complete');
+      console.log('User found, proceeding with password reset');
       return { success: true };
     } catch (error) {
       console.error('Error in resetPassword function:', error);

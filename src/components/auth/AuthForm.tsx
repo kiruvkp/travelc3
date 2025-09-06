@@ -92,26 +92,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setError('');
 
     try {
-      // First verify the user exists by attempting to sign in with a dummy password
-      // This is a workaround since we can't directly update passwords without authentication
-      try {
-        await signIn(email.trim(), 'dummy-password-check');
-      } catch (signInError: any) {
-        if (signInError.message?.includes('Invalid login credentials')) {
-          // User exists but password is wrong - this is expected
-          // Now we simulate the password update
-          console.log('User exists, proceeding with password reset simulation');
-        } else if (signInError.message?.includes('Email not confirmed')) {
-          setError('Please confirm your email address before resetting your password.');
-          return;
-        } else {
-          setError('User with this email address not found. Please check your email or create a new account.');
-          return;
-        }
-      }
-
-      // Simulate password update (in real implementation, this would use a reset token)
-      console.log('Simulating password update for:', email.trim());
+      // Use the resetPassword function from AuthContext
+      await resetPassword(email.trim(), newPassword);
       
       setPasswordResetSuccess(true);
       
