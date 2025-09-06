@@ -125,7 +125,7 @@ export default function TripCard({ trip, onClick, onDelete }: TripCardProps) {
           {trip.budget > 0 && (
             <div className="flex items-center text-sm text-gray-600">
               <CurrencyDollarIcon className="h-4 w-4 mr-2 text-gray-400" />
-              {formatCurrency(trip.budget, trip.currency as Currency)} budget
+              {formatCurrencyWithLocale(trip.budget, trip.currency as Currency)} budget
             </div>
           )}
 

@@ -419,7 +419,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Budget Usage</span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {formatCurrency(currentTrip.budget - totalExpenses, currentTrip.currency as Currency)} remaining
+                {formatCurrencyWithLocale(currentTrip.budget - totalExpenses, currentTrip.currency as Currency)} remaining
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -591,7 +591,6 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
                                             <div className="pl-8">
                                               <ActivityCard
                                                 activity={activity}
-                                                tripCurrency={currentTrip.currency as Currency}
                                                 onUpdate={fetchActivities}
                                                 onEdit={handleEditActivity}
                                                 onDelete={() => deleteActivity(activity.id)}

@@ -43,7 +43,6 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   const [loading, setLoading] = useState(true);
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [error, setError] = useState('');
   const [formData, setFormData] = useState<ExpenseFormData>({
     amount: 0,
     category: 'other',
@@ -359,7 +358,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
                       </div>
                       <div className="flex items-center space-x-3">
                         <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(expense.amount, expense.currency as Currency)}
+                          {formatCurrencyWithLocale(expense.amount, expense.currency as Currency)}
                         </span>
                         <div className="flex items-center space-x-1">
                           <button
@@ -406,7 +405,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm font-medium z-10">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Amount *
                   </label>
                   <input
@@ -416,7 +415,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
                     step="0.01"
                     value={formData.amount || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                    className="w-full pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="0.00"
                   />
                 </div>
@@ -500,6 +499,21 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          <div className="flex items-center">
+            <span className="mr-2">{error}</span>
+            <button
+              onClick={() => setError('')}
+              className="text-white hover:text-gray-200"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}

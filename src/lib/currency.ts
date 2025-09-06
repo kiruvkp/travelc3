@@ -88,11 +88,9 @@ export function getCurrencyInfo(currency: Currency) {
 
 // Helper function to format currency with proper locale
 export function formatCurrencyWithLocale(amount: number, currency: Currency): string {
-  const symbol = getCurrencySymbol(currency);
-  
   // Handle invalid amounts
   if (isNaN(amount) || amount === null || amount === undefined) {
-    return `${symbol}0`;
+    return formatCurrency(amount, currency);
   }
   
   // Use appropriate locale for each currency
