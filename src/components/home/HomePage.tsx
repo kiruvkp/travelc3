@@ -138,7 +138,7 @@ export default function HomePage({
       
       tripsData.forEach(trip => {
         // Calculate budget by currency
-        const currency = trip.currency || 'USD';
+        const currency = trip.currency;
         budgetByCurrency[currency] = (budgetByCurrency[currency] || 0) + (trip.budget || 0);
         
         // Count trip statuses
