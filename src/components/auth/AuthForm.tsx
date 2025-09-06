@@ -50,11 +50,11 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
         setError('Database connection not configured. Please set up Supabase credentials in the .env file and restart the server.');
       } else if (error.message?.includes('Failed to fetch')) {
         setError('Unable to connect to the authentication service. Please check your internet connection and Supabase configuration.');
-      } else if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid email or password')) {
+      } else if (error.message?.includes('Invalid login credentials') || error.message?.includes('invalid_credentials')) {
         if (mode === 'signin') {
-          setError('Invalid email or password. Please check your credentials and try again, or use "Forgot your password?" to reset it.');
+          setError('The email or password you entered is incorrect. Please double-check your credentials for typos or extra spaces. If you forgot your password, use "Forgot your password?" below. If you don\'t have an account yet, switch to "Create account".');
         } else {
-          setError('Unable to create account. Please check your email format and password requirements.');
+          setError('Unable to create account with these credentials. Please ensure your email is valid and password is at least 6 characters long.');
         }
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link to verify your account before signing in.');
@@ -72,21 +72,14 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       } else if (error.message?.includes('Email rate limit exceeded')) {
         setError('Too many signup attempts. Please wait a few minutes before trying again.');
       } else {
-        // For credential errors, provide helpful guidance
-        if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
-          if (mode === 'signin') {
-            setError('The email or password you entered is incorrect. Please double-check your credentials or use "Forgot your password?" to reset it.');
-          } else {
-            setError('Unable to create account with these credentials. Please try a different email or check the password requirements.');
-          }
-        } else {
-          console.error('Unexpected auth error:', error);
-          setError(error.message || 'An unexpected error occurred during authentication. Please try again.');
-        }
+        console.error('Unexpected auth error:', error);
+        setError(error.message || 'An unexpected error occurred during authentication. Please try again.');
       }
       
-      // Don't set global error for credential issues as they're handled locally
-      if (!error.message?.includes('invalid_credentials') && !error.message?.includes('Invalid login credentials')) {
+      // Don't set global error for credential issues as they're handled locally with better guidance
+      const isCredentialError = error.message?.includes('invalid_credentials') || 
+                               error.message?.includes('Invalid login credentials');
+      if (!isCredentialError) {
         setGlobalError(error);
       }
     } finally {
@@ -300,8 +293,17 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
           </div>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              </div>
             </div>
           )}
 
