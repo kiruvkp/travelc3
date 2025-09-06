@@ -49,6 +49,18 @@ export default function HomePage({
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
+  // Calculate total budget in selected currency
+  const getTotalBudgetInSelectedCurrency = () => {
+    return trips.reduce((total, trip) => {
+      const convertedAmount = convertCurrency(
+        trip.budget || 0, 
+        trip.currency as Currency, 
+        selectedCurrency
+      );
+      return total + convertedAmount;
+    }, 0);
+  };
+
   useEffect(() => {
     if (user) {
       fetchTrips();
@@ -118,25 +130,8 @@ export default function HomePage({
     }
   }
 
-  const formatMultiCurrencyBudget = (budgetByCurrency: Record<string, number>) => {
-    const currencies = Object.keys(budgetByCurrency).filter(currency => budgetByCurrency[currency] > 0);
-    
-    if (currencies.length === 0) {
-      return formatCurrency(0, selectedCurrency);
-    }
-    
-    // Always convert all currencies to the selected currency and sum them
-    let totalInSelectedCurrency = 0;
-    currencies.forEach(currency => {
-      const amount = budgetByCurrency[currency];
-      const convertedAmount = convertCurrency(amount, currency as Currency, selectedCurrency);
-      totalInSelectedCurrency += convertedAmount;
-    });
-    
-    return formatCurrency(totalInSelectedCurrency, selectedCurrency);
-  };
-
-  const getOriginalCurrencyBreakdown = (budgetByCurrency: Record<string, number>) => {
+  const getOriginalCurrencyBreakdown = () => {
+    const budgetByCurrency = stats.budgetByCurrency;
     const currencies = Object.keys(budgetByCurrency).filter(currency => budgetByCurrency[currency] > 0);
     
     if (currencies.length === 0) return 'No budget set';
@@ -262,12 +257,12 @@ export default function HomePage({
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {loading ? '...' : formatMultiCurrencyBudget(stats.budgetByCurrency)}
+                  {loading ? '...' : formatCurrency(getTotalBudgetInSelectedCurrency(), selectedCurrency)}
                 </p>
                 <div className="flex items-center justify-between mt-1">
                   <p 
                     className="text-xs text-gray-500 dark:text-gray-400 cursor-help"
-                    title={getOriginalCurrencyBreakdown(stats.budgetByCurrency)}
+                    title={getOriginalCurrencyBreakdown()}
                   >
                     {Object.keys(stats.budgetByCurrency).length > 1 
                       ? `From ${Object.keys(stats.budgetByCurrency).length} currencies`
