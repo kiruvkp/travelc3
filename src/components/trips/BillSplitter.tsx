@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, Trip } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { formatCurrency, Currency } from '../../lib/currency';
+import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,
   PlusIcon,
