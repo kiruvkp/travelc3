@@ -31,7 +31,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
 
     try {
       if (mode === 'signup') {
-      setResetEmailSent(true);
+        await signUp(email, password, fullName);
         onModeChange('signin');
         // Clear form
         setEmail('');
@@ -41,17 +41,8 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
         await signIn(email, password);
       }
     } catch (error: any) {
-      console.error('Password reset error:', error);
+      console.error('Authentication error:', error);
       setGlobalError(error);
-      if (error.message?.includes('Supabase is not configured')) {
-        setError('Email service not configured. Please set up Supabase credentials.');
-      } else if (error.message?.includes('User not found')) {
-        setError('No account found with this email address.');
-      } else if (error.message?.includes('Email rate limit exceeded')) {
-        setError('Too many reset attempts. Please wait a few minutes before trying again.');
-      } else {
-        setError(error.message || 'Failed to send reset email. Please try again.');
-      }
       if (error.message?.includes('Supabase is not configured')) {
         setError('Database connection not configured. Please set up Supabase credentials in the .env file and restart the server.');
       } else if (error.message?.includes('Failed to fetch')) {
