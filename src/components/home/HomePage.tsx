@@ -222,7 +222,9 @@ export default function HomePage({
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900 rounded-xl flex items-center justify-center">
-                <GlobeAltIcon className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-yellow-600 dark:text-yellow-400 text-lg font-bold">
+                  {CURRENCY_SYMBOLS[selectedCurrency]}
+                </span>
               </div>
               <div className="ml-4">
                 <div className="flex items-center justify-between">
