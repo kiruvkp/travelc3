@@ -48,17 +48,38 @@ export default function HomePage({
   const [loading, setLoading] = useState(true);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [convertedBudget, setConvertedBudget] = useState<number>(0);
+  const [budgetLoading, setBudgetLoading] = useState(false);
 
   // Calculate total budget in selected currency
-  const getTotalBudgetInSelectedCurrency = () => {
-    return trips.reduce((total, trip) => {
-      const convertedAmount = convertCurrency(
-        trip.budget || 0, 
-        trip.currency as Currency, 
-        selectedCurrency
-      );
-      return total + convertedAmount;
-    }, 0);
+  const calculateTotalBudgetInSelectedCurrency = async () => {
+    setBudgetLoading(true);
+    try {
+      // Fetch all user trips to get the most up-to-date budget data
+      const { data: allTrips, error } = await supabase
+        .from('trips')
+        .select('budget, currency')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      // Convert all budgets to selected currency and sum them up
+      const totalConverted = (allTrips || []).reduce((total, trip) => {
+        const convertedAmount = convertCurrency(
+          trip.budget || 0, 
+          trip.currency as Currency, 
+          selectedCurrency
+        );
+        return total + convertedAmount;
+      }, 0);
+
+      setConvertedBudget(totalConverted);
+    } catch (error) {
+      console.error('Error calculating converted budget:', error);
+      setConvertedBudget(0);
+    } finally {
+      setBudgetLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -68,6 +89,19 @@ export default function HomePage({
     }
   }, [user]);
 
+  // Recalculate budget when currency changes or trips change
+  useEffect(() => {
+    if (user && trips.length > 0) {
+      calculateTotalBudgetInSelectedCurrency();
+    }
+  }, [selectedCurrency, trips, user]);
+
+  // Handle currency selection
+  const handleCurrencyChange = async (newCurrency: Currency) => {
+    setSelectedCurrency(newCurrency);
+    setShowCurrencyDropdown(false);
+    // The useEffect above will trigger the recalculation
+  };
   async function fetchTrips() {
     try {
       const { data, error } = await supabase
@@ -245,8 +279,7 @@ export default function HomePage({
                             key={currency}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedCurrency(currency as Currency);
-                              setShowCurrencyDropdown(false);
+                             handleCurrencyChange(currency as Currency);
                             }}
                             className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
                               selectedCurrency === currency 
@@ -263,7 +296,14 @@ export default function HomePage({
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {loading ? '...' : formatCurrency(getTotalBudgetInSelectedCurrency(), selectedCurrency)}
+                  {loading || budgetLoading ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
+                      ...
+                    </div>
+                  ) : (
+                    formatCurrency(convertedBudget, selectedCurrency)
+                  )}
                 </p>
                 <div className="flex items-center justify-between mt-1">
                   <p 
