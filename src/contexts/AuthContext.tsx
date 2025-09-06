@@ -218,23 +218,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function resetPassword(email: string) {
-    // Check if Supabase is properly configured
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    console.log('Attempting to send password reset email to:', email);
     
-    if (!supabaseUrl || !supabaseKey || 
-        supabaseUrl.includes('placeholder') || 
-        supabaseKey.includes('placeholder') ||
-        supabaseUrl === 'https://your-project-id.supabase.co' ||
-        supabaseKey === 'your-anon-key-here') {
-      throw new Error('Supabase is not configured. Please add your Supabase URL and API key to the .env file.');
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      console.log('Password reset response:', { data, error });
+
+      if (error) {
+        console.error('Password reset error from Supabase:', error);
+        throw error;
+      }
+      
+      console.log('Password reset email sent successfully');
+    } catch (error) {
+      console.error('Error in resetPassword function:', error);
+      throw error;
     }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-
-    if (error) throw error;
   }
 
   const value = {

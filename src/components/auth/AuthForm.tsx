@@ -16,15 +16,17 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setResetEmailSent(false);
 
     try {
       if (mode === 'signup') {
-        await signUp(email, password, fullName);
+      setResetEmailSent(true);
         onModeChange('signin');
         // Clear form
         setEmail('');
@@ -34,7 +36,16 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
         await signIn(email, password);
       }
     } catch (error: any) {
-      // Handle specific authentication errors
+      console.error('Password reset error:', error);
+      if (error.message?.includes('Supabase is not configured')) {
+        setError('Email service not configured. Please set up Supabase credentials.');
+      } else if (error.message?.includes('User not found')) {
+        setError('No account found with this email address.');
+      } else if (error.message?.includes('Email rate limit exceeded')) {
+        setError('Too many reset attempts. Please wait a few minutes before trying again.');
+      } else {
+        setError(error.message || 'Failed to send reset email. Please try again.');
+      }
       if (error.message?.includes('Supabase is not configured')) {
         setError('Database connection not configured. Please set up Supabase credentials in the .env file and restart the server.');
       } else if (error.message?.includes('Failed to fetch')) {
