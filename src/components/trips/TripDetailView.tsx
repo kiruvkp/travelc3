@@ -591,6 +591,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
                                             <div className="pl-8">
                                               <ActivityCard
                                                 activity={activity}
+                                                tripCurrency={currentTrip.currency as Currency}
                                                 onUpdate={fetchActivities}
                                                 onEdit={handleEditActivity}
                                                 onDelete={() => deleteActivity(activity.id)}
