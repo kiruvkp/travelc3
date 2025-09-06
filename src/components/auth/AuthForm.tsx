@@ -41,17 +41,30 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
-      setGlobalError(error);
+      
+      // Clear any previous errors
+      setError('');
+      
+      // Handle specific authentication errors
       if (error.message?.includes('Supabase is not configured')) {
         setError('Database connection not configured. Please set up Supabase credentials in the .env file and restart the server.');
       } else if (error.message?.includes('Failed to fetch')) {
         setError('Unable to connect to the authentication service. Please check your internet connection and Supabase configuration.');
       } else if (error.message?.includes('Invalid login credentials') || error.message?.includes('Invalid email or password')) {
-        setError('Invalid email or password. Please check your credentials and try again.');
+        if (mode === 'signin') {
+          setError('Invalid email or password. Please check your credentials and try again, or use "Forgot your password?" to reset it.');
+        } else {
+          setError('Unable to create account. Please check your email format and password requirements.');
+        }
       } else if (error.message?.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link to verify your account before signing in.');
       } else if (error.message?.includes('User already registered')) {
         setError('An account with this email already exists. Please sign in instead.');
+        // Automatically switch to sign in mode
+        setTimeout(() => {
+          onModeChange('signin');
+          setError('');
+        }, 3000);
       } else if (error.message?.includes('Password should be at least 6 characters')) {
         setError('Password must be at least 6 characters long.');
       } else if (error.message?.includes('Signup is disabled')) {
@@ -59,8 +72,22 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       } else if (error.message?.includes('Email rate limit exceeded')) {
         setError('Too many signup attempts. Please wait a few minutes before trying again.');
       } else {
-        console.error('Auth error:', error);
-        setError(error.message || 'An error occurred during authentication. Please try again.');
+        // For credential errors, provide helpful guidance
+        if (error.message?.includes('invalid_credentials') || error.message?.includes('Invalid login credentials')) {
+          if (mode === 'signin') {
+            setError('The email or password you entered is incorrect. Please double-check your credentials or use "Forgot your password?" to reset it.');
+          } else {
+            setError('Unable to create account with these credentials. Please try a different email or check the password requirements.');
+          }
+        } else {
+          console.error('Unexpected auth error:', error);
+          setError(error.message || 'An unexpected error occurred during authentication. Please try again.');
+        }
+      }
+      
+      // Don't set global error for credential issues as they're handled locally
+      if (!error.message?.includes('invalid_credentials') && !error.message?.includes('Invalid login credentials')) {
+        setGlobalError(error);
       }
     } finally {
       setLoading(false);
