@@ -8,7 +8,7 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -22,11 +22,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
     setError('');
 
     try {
-      if (mode === 'signup') {
-        await signUp(email, password, fullName);
-        // Show success message for signup
-        alert('Account created successfully! Please check your email to confirm your account, then you can sign in.');
-        // Switch to sign in mode
+      await resetPassword(resetEmail);
         onModeChange('signin');
         // Clear form
         setEmail('');
