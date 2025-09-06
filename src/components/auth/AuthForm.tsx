@@ -136,20 +136,18 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
-            {showForgotPassword || showNewPasswordForm ? (
+            {showForgotPassword ? (
               <KeyIcon className="h-8 w-8 text-white" />
             ) : (
               <span className="text-white text-2xl font-bold">T</span>
             )}
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {showNewPasswordForm ? 'Create New Password' :
-             showForgotPassword ? 'Reset Password' :
+            {showForgotPassword ? 'Reset Password' :
              mode === 'signin' ? 'Welcome back' : 'Create account'}
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {showNewPasswordForm ? 'Enter your new password to complete the reset' :
-             showForgotPassword ? 'Enter your email to receive reset instructions' :
+            {showForgotPassword ? 'Enter your email and create a new password' :
              mode === 'signin' 
                ? 'Sign in to your travel planning account' 
                : 'Start planning your next adventure'}
@@ -303,7 +301,7 @@ export default function AuthForm({ mode, onModeChange }: AuthFormProps) {
         )}
 
         {/* Main Auth Form */}
-        {!showForgotPassword && !showNewPasswordForm && (
+        {!showForgotPassword && (
           <form className="space-y-6" onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div>
