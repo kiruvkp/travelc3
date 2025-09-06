@@ -181,14 +181,14 @@ export default function FeaturesPage({ onBack }: FeaturesPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Everything You Need to Plan
+              Everything You Need to Plan Amazing Adventures
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
                 Amazing Trips
               </span>
             </h1>
             <p className="text-xl text-blue-100 dark:text-blue-200 max-w-3xl mx-auto">
-              From AI-powered recommendations to collaborative planning, we've got all the tools 
-              to make your travel planning effortless and enjoyable.
+              From AI-powered recommendations to collaborative planning, Globe Go has all the tools 
+              to make your adventure planning effortless and enjoyable.
             </p>
           </div>
         </div>

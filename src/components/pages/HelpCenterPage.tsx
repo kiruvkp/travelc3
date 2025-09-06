@@ -196,10 +196,13 @@ export default function HelpCenterPage({ onBack }: HelpCenterPageProps) {
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Help Center</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Find answers and get support</p>
             </div>
-          </div>
-        </div>
-      </div>
-
+              <input
+                type="text"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="What was this expense for?"
+              />
       {/* Header */}
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 dark:from-blue-800 dark:via-purple-800 dark:to-indigo-900">

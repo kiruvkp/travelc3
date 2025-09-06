@@ -84,13 +84,13 @@ export default function MobileAppPage({ onBack }: MobileAppPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-white">
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                TravelPlanner
+                Globe Go
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
                   Mobile App
                 </span>
               </h1>
               <p className="text-xl text-blue-100 dark:text-blue-200 mb-8">
-                Take your travel plans with you wherever you go. Plan, organize, and navigate 
+                Take your adventure plans with you wherever you go. Plan, organize, and navigate 
                 your trips with our powerful mobile application.
               </p>
               

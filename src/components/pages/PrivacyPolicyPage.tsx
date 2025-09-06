@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
           <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Introduction</h2>
             <p className="mb-6">
-              At TravelPlanner, we take your privacy seriously. This Privacy Policy explains how we collect, 
+              At Globe Go, we take your privacy seriously. This Privacy Policy explains how we collect, 
               use, disclose, and safeguard your information when you use our travel planning application.
             </p>
 
@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage({ onBack }: PrivacyPolicyPageProps) {
             </p>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>Email:</strong> privacy@travelplanner.com<br />
+                <strong>Email:</strong> privacy@globego.com<br />
                 <strong>Address:</strong> 123 Innovation Drive, San Francisco, CA 94105<br />
                 <strong>Phone:</strong> +1 (555) 123-4567
               </p>

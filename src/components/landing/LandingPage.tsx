@@ -131,7 +131,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                 <span className="text-white text-xl font-bold">T</span>
               </div>
               <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">TravelPlanner</h1>
+                <h3 className="text-xl font-bold">Globe Go</h3>
               </div>
             </div>
             
@@ -415,7 +415,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                   <span className="text-white text-xl font-bold">T</span>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-xl font-bold">TravelPlanner</h3>
+                  <h1 className="text-xl font-bold text-gray-900">Globe Go</h1>
                 </div>
               </div>
               <p className="text-gray-400">

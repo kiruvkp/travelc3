@@ -138,9 +138,9 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             Empowering Every Traveler
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed">
-            We're on a mission to democratize travel planning by combining the power of artificial intelligence 
+            We're on a mission to democratize adventure planning by combining the power of artificial intelligence 
             with human creativity and collaboration. Whether you're planning a weekend getaway or a month-long 
-            adventure, TravelPlanner helps you create unforgettable experiences with less stress and more joy.
+            adventure, Globe Go helps you create unforgettable experiences with less stress and more joy.
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Our Story</h2>
             <div className="prose prose-lg max-w-none text-gray-600 dark:text-gray-400">
               <p className="mb-6">
-                TravelPlanner was born from a simple frustration: planning trips was too complicated, 
+                Globe Go was born from a simple frustration: planning trips was too complicated, 
                 time-consuming, and stressful. Our founders, avid travelers themselves, spent countless 
                 hours researching destinations, comparing prices, and coordinating with travel companions 
                 using scattered tools and endless spreadsheets.
@@ -182,7 +182,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
                 travel planning intelligent, collaborative, and fun.
               </p>
               <p>
-                Today, TravelPlanner serves thousands of travelers worldwide, helping them create 
+                Today, Globe Go serves thousands of travelers worldwide, helping them create 
                 personalized itineraries, collaborate with friends and family, and discover amazing 
                 destinations they might never have found otherwise. We're just getting started on 
                 our mission to transform how the world plans travel.

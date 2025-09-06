@@ -32,7 +32,7 @@ export default function StatusPage({ onBack }: StatusPageProps) {
     {
       name: 'Web Application',
       status: 'operational',
-      description: 'Main TravelPlanner web application',
+      description: 'Main Globe Go web application',
       lastChecked: '2 minutes ago'
     },
     {
@@ -269,7 +269,7 @@ export default function StatusPage({ onBack }: StatusPageProps) {
             System Status
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            Current operational status of all TravelPlanner services
+            Current operational status of all Globe Go services
           </p>
         </div>
 

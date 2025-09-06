@@ -47,14 +47,14 @@ export default function TermsOfServicePage({ onBack }: TermsOfServicePageProps) 
           <div className="prose prose-lg max-w-none text-gray-700 dark:text-gray-300">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">1. Acceptance of Terms</h2>
             <p className="mb-6">
-              By accessing and using TravelPlanner ("the Service"), you accept and agree to be bound by the 
+              By accessing and using Globe Go ("the Service"), you accept and agree to be bound by the 
               terms and provision of this agreement. If you do not agree to abide by the above, please do 
               not use this service.
             </p>
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">2. Description of Service</h2>
             <p className="mb-6">
-              TravelPlanner is an AI-powered travel planning application that helps users create itineraries, 
+              Globe Go is an AI-powered travel planning application that helps users create itineraries, 
               collaborate with others, track expenses, and discover destinations. The Service includes web-based 
               tools, AI recommendations, and collaborative features.
             </p>
@@ -133,7 +133,7 @@ export default function TermsOfServicePage({ onBack }: TermsOfServicePageProps) 
 
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">10. Limitation of Liability</h2>
             <p className="mb-6">
-              To the maximum extent permitted by law, TravelPlanner shall not be liable for any indirect, 
+              To the maximum extent permitted by law, Globe Go shall not be liable for any indirect, 
               incidental, special, consequential, or punitive damages, including but not limited to loss of 
               profits, data, or other intangible losses resulting from your use of the Service.
             </p>
@@ -165,7 +165,7 @@ export default function TermsOfServicePage({ onBack }: TermsOfServicePageProps) 
             </p>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>Email:</strong> legal@travelplanner.com<br />
+                <strong>Email:</strong> legal@globego.com<br />
                 <strong>Address:</strong> 123 Innovation Drive, San Francisco, CA 94105<br />
                 <strong>Phone:</strong> +1 (555) 123-4567
               </p>

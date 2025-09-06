@@ -37,6 +37,7 @@ export default function APIPage({ onBack }: APIPageProps) {
   "total": 1
 }`,
       example: `curl -X GET "https://api.travelplanner.com/api/trips" \\
+      example: `curl -X GET "https://api.globego.com/api/trips" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
     },
@@ -68,6 +69,7 @@ export default function APIPage({ onBack }: APIPageProps) {
   }
 }`,
       example: `curl -X POST "https://api.travelplanner.com/api/trips" \\
+      example: `curl -X POST "https://api.globego.com/api/trips" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -106,6 +108,7 @@ export default function APIPage({ onBack }: APIPageProps) {
   ]
 }`,
       example: `curl -X GET "https://api.travelplanner.com/api/trips/uuid/activities" \\
+      example: `curl -X GET "https://api.globego.com/api/trips/uuid/activities" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
     },
@@ -137,6 +140,7 @@ export default function APIPage({ onBack }: APIPageProps) {
   }
 }`,
       example: `curl -X POST "https://api.travelplanner.com/api/ai/recommendations" \\
+      example: `curl -X POST "https://api.globego.com/api/ai/recommendations" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -184,7 +188,7 @@ export default function APIPage({ onBack }: APIPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              TravelPlanner API
+              Globe Go API
             </h1>
             <p className="text-xl text-blue-100 dark:text-blue-200 max-w-3xl mx-auto">
               Build amazing travel applications with our powerful API. Access AI recommendations, 
@@ -478,7 +482,7 @@ export default function APIPage({ onBack }: APIPageProps) {
               Need API Support?
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
-              Our developer support team is here to help you integrate with the TravelPlanner API.
+              Our developer support team is here to help you integrate with the Globe Go API.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button

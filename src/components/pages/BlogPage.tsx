@@ -28,7 +28,7 @@ export default function BlogPage({ onBack }: BlogPageProps) {
       excerpt: 'Discover how artificial intelligence is transforming the way we plan and experience travel, making it more personalized and efficient than ever before.',
       content: `Artificial Intelligence is fundamentally changing how we approach travel planning. Gone are the days of spending hours researching destinations, comparing prices, and trying to piece together the perfect itinerary.
 
-With AI-powered travel planning, you can now get personalized recommendations based on your unique preferences, travel style, and budget. Our AI analyzes millions of data points including weather patterns, local events, crowd levels, and user reviews to suggest the perfect activities for your trip.
+With AI-powered travel planning, you can now get personalized recommendations based on your unique preferences, travel style, and budget. Globe Go's AI analyzes millions of data points including weather patterns, local events, crowd levels, and user reviews to suggest the perfect activities for your trip.
 
 The technology goes beyond simple recommendations. AI can optimize your entire itinerary, considering factors like travel time between locations, opening hours, and even your energy levels throughout the day. This means you spend less time planning and more time enjoying your adventure.
 

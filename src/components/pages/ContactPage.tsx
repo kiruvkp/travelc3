@@ -96,8 +96,8 @@ export default function ContactPage({ onBack }: ContactPageProps) {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email Us</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-2">Send us an email and we'll get back to you within 24 hours.</p>
-                  <a href="mailto:hello@travelplanner.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                    hello@travelplanner.com
+                  <a href="mailto:hello@globego.com" className="text-blue-600 dark:text-blue-400 hover:underline">
+                    hello@globego.com
                   </a>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function ContactPage({ onBack }: ContactPageProps) {
 
                   <button
                     type="submit"
-                    disabled={loading}
+                    onClick={() => window.location.href = 'mailto:support@globego.com'}
                     className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     {loading ? 'Sending...' : 'Send Message'}
