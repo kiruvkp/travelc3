@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ErrorToast from '../common/ErrorToast';
-import ErrorToast from '../common/ErrorToast';
 import { formatCurrency, Currency, getCurrencySymbol } from '../../lib/currency';
 import {
   CurrencyDollarIcon,

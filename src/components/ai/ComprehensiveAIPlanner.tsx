@@ -3,7 +3,6 @@ import { openAIService } from '../../lib/openai';
 import ComponentErrorBoundary from '../common/ComponentErrorBoundary';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ErrorToast from '../common/ErrorToast';
-import ErrorToast from '../common/ErrorToast';
 import { supabase, TripNote, Activity } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
