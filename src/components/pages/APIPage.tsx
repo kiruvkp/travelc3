@@ -37,7 +37,6 @@ export default function APIPage({ onBack }: APIPageProps) {
   "total": 1
 }`,
       example: `curl -X GET "https://api.travelplanner.com/api/trips" \\
-      example: `curl -X GET "https://api.globego.com/api/trips" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
     },
@@ -69,7 +68,6 @@ export default function APIPage({ onBack }: APIPageProps) {
   }
 }`,
       example: `curl -X POST "https://api.travelplanner.com/api/trips" \\
-      example: `curl -X POST "https://api.globego.com/api/trips" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -108,7 +106,6 @@ export default function APIPage({ onBack }: APIPageProps) {
   ]
 }`,
       example: `curl -X GET "https://api.travelplanner.com/api/trips/uuid/activities" \\
-      example: `curl -X GET "https://api.globego.com/api/trips/uuid/activities" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
     },
@@ -140,7 +137,6 @@ export default function APIPage({ onBack }: APIPageProps) {
   }
 }`,
       example: `curl -X POST "https://api.travelplanner.com/api/ai/recommendations" \\
-      example: `curl -X POST "https://api.globego.com/api/ai/recommendations" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
