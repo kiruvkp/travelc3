@@ -223,33 +223,39 @@ export default function HomePage({
                 </span>
               </div>
               <div className="ml-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mr-4">Total Budget</p>
                   <div className="relative">
                     <button
-                      onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                      className="flex items-center text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCurrencyDropdown(!showCurrencyDropdown);
+                      }}
+                      className="flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
                     >
+                      <span className="mr-1">{CURRENCY_SYMBOLS[selectedCurrency]}</span>
                       {selectedCurrency}
                       <ChevronDownIcon className="h-3 w-3 ml-1" />
                     </button>
                     
                     {showCurrencyDropdown && (
-                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10 min-w-[100px]">
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[120px]">
                         {Object.keys(CURRENCY_SYMBOLS).map((currency) => (
                           <button
                             key={currency}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedCurrency(currency as Currency);
                               setShowCurrencyDropdown(false);
                             }}
-                            className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${
+                            className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors first:rounded-t-lg last:rounded-b-lg ${
                               selectedCurrency === currency 
                                 ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300' 
                                 : 'text-gray-700 dark:text-gray-300'
                             }`}
                           >
-                            {CURRENCY_SYMBOLS[currency as Currency]} {currency}
+                            <span className="mr-2">{CURRENCY_SYMBOLS[currency as Currency]}</span>
+                            {currency}
                           </button>
                         ))}
                       </div>
