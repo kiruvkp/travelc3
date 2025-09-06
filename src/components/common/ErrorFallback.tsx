@@ -51,7 +51,7 @@ export default function ErrorFallback({
               </summary>
               <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 text-xs font-mono text-gray-800 dark:text-gray-200 overflow-auto max-h-40">
                 <div className="mb-2 font-semibold text-red-600 dark:text-red-400">
-                    onClick={() => window.location.href = 'mailto:support@globego.com?subject=Error Report&body=' + 
+                    {error.message}
                 </div>
                 {error.stack && (
                   <div className="whitespace-pre-wrap text-gray-600 dark:text-gray-400">
