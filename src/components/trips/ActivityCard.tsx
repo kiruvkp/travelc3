@@ -60,7 +60,7 @@ export default function ActivityCard({ activity, tripCurrency, onUpdate, onDelet
           {activity.cost > 0 && (
             <div className="flex items-center text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
               <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-              {tripCurrency ? formatCurrency(activity.cost, tripCurrency) : `$${activity.cost}`}
+              {formatCurrency(activity.cost, tripCurrency || 'USD')}
             </div>
           )}
         </div>
