@@ -106,7 +106,14 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     e.preventDefault();
     if (!user) return;
 
+    if (!formData.amount || formData.amount <= 0) {
+      setError('Please enter a valid amount greater than 0');
+      return;
+    }
+
     setLoading(true);
+    setError('');
+    
     try {
       if (editingExpense) {
         const { error } = await supabase
@@ -142,7 +149,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       onBudgetUpdate?.();
     } catch (error) {
       console.error('Error saving expense:', error);
-      alert('Failed to save expense. Please try again.');
+      setError('Failed to save expense. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -172,9 +179,11 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
       category: 'other',
       description: '',
       date: new Date().toISOString().split('T')[0],
+      activity_id: undefined,
     });
     setShowAddExpense(false);
     setEditingExpense(null);
+    setError('');
   }
 
   function startEdit(expense: Expense) {
