@@ -215,7 +215,7 @@ export default function HomePage({
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Good afternoon, {profile?.full_name?.split(' ')[0] || 'traveler'}! ✈️
+            Good afternoon, kiran! ✈️
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300">
             Ready for your next adventure? Let's plan something amazing.
