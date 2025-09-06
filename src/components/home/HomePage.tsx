@@ -48,8 +48,8 @@ export default function HomePage({
   const [loading, setLoading] = useState(true);
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [totalBudgetConverted, setTotalBudgetConverted] = useState<number>(0);
-  const [budgetCalculating, setBudgetCalculating] = useState(false);
+  const [convertedBudget, setConvertedBudget] = useState<number>(0);
+  const [budgetLoading, setBudgetLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -58,18 +58,18 @@ export default function HomePage({
     }
   }, [user]);
 
-  // Calculate total budget in selected currency whenever currency or trips change
+  // Recalculate budget when currency changes or trips change
   useEffect(() => {
-    calculateTotalBudget();
-  }, [selectedCurrency, trips]);
+    if (user && trips.length >= 0) {
+      calculateTotalBudgetInSelectedCurrency();
+    }
+  }, [selectedCurrency, trips, user]);
 
-  async function calculateTotalBudget() {
+  async function calculateTotalBudgetInSelectedCurrency() {
     if (!user) return;
     
-    setBudgetCalculating(true);
+    setBudgetLoading(true);
     try {
-      console.log('Calculating total budget for currency:', selectedCurrency);
-      
       // Fetch fresh trip data to ensure we have latest budgets
       const { data: allTrips, error } = await supabase
         .from('trips')
@@ -77,11 +77,9 @@ export default function HomePage({
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error fetching trips for budget calculation:', error);
         throw error;
       }
 
-      console.log('Fetched trips for budget calculation:', allTrips);
 
       // Convert each trip's budget to selected currency and sum
       let totalInSelectedCurrency = 0;
@@ -89,31 +87,25 @@ export default function HomePage({
       (allTrips || []).forEach(trip => {
         const originalAmount = trip.budget || 0;
         const originalCurrency = trip.currency as Currency;
-        
-        console.log(`Converting ${originalAmount} ${originalCurrency} to ${selectedCurrency}`);
-        
         const convertedAmount = convertCurrency(originalAmount, originalCurrency, selectedCurrency);
         totalInSelectedCurrency += convertedAmount;
-        
-        console.log(`Converted: ${originalAmount} ${originalCurrency} = ${convertedAmount} ${selectedCurrency}`);
       });
 
-      console.log('Total budget in', selectedCurrency, ':', totalInSelectedCurrency);
-      setTotalBudgetConverted(totalInSelectedCurrency);
+      setConvertedBudget(totalInSelectedCurrency);
       
     } catch (error) {
       console.error('Error calculating total budget:', error);
-      setTotalBudgetConverted(0);
+      setConvertedBudget(0);
     } finally {
-      setBudgetCalculating(false);
+      setBudgetLoading(false);
     }
   }
 
-  function handleCurrencyChange(newCurrency: Currency) {
-    console.log('Currency changed from', selectedCurrency, 'to', newCurrency);
+  const handleCurrencyChange = (newCurrency: Currency) => {
     setSelectedCurrency(newCurrency);
     setShowCurrencyDropdown(false);
-  }
+    // The useEffect will trigger recalculation automatically
+  };
 
   async function fetchTrips() {
     try {
@@ -279,7 +271,7 @@ export default function HomePage({
                         e.stopPropagation();
                         setShowCurrencyDropdown(!showCurrencyDropdown);
                       }}
-                      className="flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
+                      className="currency-dropdown flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
                     >
                       <span className="mr-1">{CURRENCY_SYMBOLS[selectedCurrency]}</span>
                       {selectedCurrency}
@@ -287,7 +279,7 @@ export default function HomePage({
                     </button>
                     
                     {showCurrencyDropdown && (
-                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[100px]">
+                      <div className="currency-dropdown absolute right-0 top-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[100px]">
                         {Object.keys(CURRENCY_SYMBOLS).map((currency) => (
                           <button
                             key={currency}
@@ -310,13 +302,13 @@ export default function HomePage({
                   </div>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {loading || budgetCalculating ? (
+                  {loading || budgetLoading ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
                       ...
                     </div>
                   ) : (
-                    formatCurrency(totalBudgetConverted, selectedCurrency)
+                    formatCurrency(convertedBudget, selectedCurrency)
                   )}
                 </p>
                 <div className="flex items-center justify-between mt-1">
@@ -457,7 +449,9 @@ export default function HomePage({
                       {trip.budget > 0 && (
                         <span className="font-medium">
                           {formatCurrency(
-                            convertCurrency(trip.budget, trip.currency as Currency, selectedCurrency),
+                            trip.currency === selectedCurrency 
+                              ? trip.budget 
+                              : convertCurrency(trip.budget, trip.currency as Currency, selectedCurrency),
                             selectedCurrency
                           )}
                         </span>
