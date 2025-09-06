@@ -125,20 +125,15 @@ export default function HomePage({
       return formatCurrency(0, selectedCurrency);
     }
     
-    if (currencies.length === 1 && currencies[0] === selectedCurrency) {
-      // If all budgets are in the selected currency, show total directly
-      return formatCurrency(budgetByCurrency[selectedCurrency], selectedCurrency);
-    } else {
-      // Convert all currencies to the selected currency and sum them
-      let totalInSelectedCurrency = 0;
-      currencies.forEach(currency => {
-        const amount = budgetByCurrency[currency];
-        const convertedAmount = convertCurrency(amount, currency as Currency, selectedCurrency);
-        totalInSelectedCurrency += convertedAmount;
-      });
-      
-      return formatCurrency(totalInSelectedCurrency, selectedCurrency);
-    }
+    // Always convert all currencies to the selected currency and sum them
+    let totalInSelectedCurrency = 0;
+    currencies.forEach(currency => {
+      const amount = budgetByCurrency[currency];
+      const convertedAmount = convertCurrency(amount, currency as Currency, selectedCurrency);
+      totalInSelectedCurrency += convertedAmount;
+    });
+    
+    return formatCurrency(totalInSelectedCurrency, selectedCurrency);
   };
 
   const getOriginalCurrencyBreakdown = (budgetByCurrency: Record<string, number>) => {
@@ -228,7 +223,9 @@ export default function HomePage({
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900 rounded-xl flex items-center justify-center">
-                <CurrencyDollarIcon className="h-5 w-5 text-yellow-600" />
+                <span className="text-yellow-600 font-bold text-lg">
+                  {getCurrencySymbol(selectedCurrency)}
+                </span>
               </div>
               <div className="ml-4">
                 <div className="flex items-center justify-between">
