@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   UserIcon,
-  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   PlusIcon,
   XMarkIcon,
@@ -123,19 +122,6 @@ export default function Header({ onCreateTrip, onHome, currentView }: HeaderProp
                         >
                           <UserIcon className="h-4 w-4 mr-3" />
                           Profile
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            'flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                          )}
-                        >
-                          <Cog6ToothIcon className="h-4 w-4 mr-3" />
-                          Settings
                         </button>
                       )}
                     </Menu.Item>
