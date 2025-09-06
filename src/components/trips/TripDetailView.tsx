@@ -50,9 +50,15 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [selectedDay, setSelectedDay] = useState(1);
   const [currentTrip, setCurrentTrip] = useState<Trip>(trip);
+  const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
 
   useEffect(() => {
     fetchActivities();
+    
+    // Force budget tracker to refresh by calling onBudgetUpdate
+    console.log('TripDetailView: Triggering budget update...');
+    // We need to add a state to force budget tracker refresh
+    setBudgetRefreshKey(prev => prev + 1);
   }, [currentTrip.id]);
 
   async function fetchActivities() {
@@ -185,17 +191,16 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
     }
   }
 
-  function handleActivityAdded(activity: Activity) {
-    setActivities(prev => {
-      const newActivities = [...prev, activity];
-      return newActivities.sort((a, b) => {
-        if (a.day_number !== b.day_number) {
-          return a.day_number - b.day_number;
-        }
-        return a.order_index - b.order_index;
-      });
-    });
+  async function handleActivityAdded(activity: Activity) {
+    console.log('TripDetailView: Activity added, refreshing data...');
     setShowAddActivity(false);
+    
+    // Refresh activities to get the latest data including any expense records
+    console.log('TripDetailView: Fetching latest activities...');
+    await fetchActivities();
+    
+    // Force budget tracker to refresh by incrementing the key
+    setBudgetRefreshKey(prev => prev + 1);
   }
 
   function handleEditActivity(activity: Activity) {
@@ -452,6 +457,7 @@ export default function TripDetailView({ trip, onBack, onTripUpdated }: TripDeta
         {showBudgetTracker && (
           <div className="mb-6">
             <BudgetTracker
+              key={budgetRefreshKey}
               trip={currentTrip}
               activities={activities}
               onBudgetUpdate={fetchActivities}

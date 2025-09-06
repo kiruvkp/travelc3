@@ -51,34 +51,63 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
   });
 
   useEffect(() => {
+    console.log('BudgetTracker: Component mounted/updated, fetching expenses...');
     fetchExpenses();
   }, [trip.id]);
 
   async function fetchExpenses() {
     try {
       setLoading(true);
+      console.log('BudgetTracker: Fetching expenses for trip:', trip.id);
+      
       const { data, error } = await supabase
         .from('expenses')
         .select('*')
         .eq('trip_id', trip.id)
         .order('date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('BudgetTracker: Error fetching expenses:', error);
+        throw error;
+      }
+
+      console.log('BudgetTracker: Successfully fetched expenses:', data);
+      console.log('BudgetTracker: Number of expenses found:', data?.length || 0);
+      
+      if (data && data.length > 0) {
+        console.log('BudgetTracker: Sample expense data:', data[0]);
+      }
+      
       setExpenses(data || []);
     } catch (error) {
-      console.error('Error fetching expenses:', error);
+      console.error('BudgetTracker: Error in fetchExpenses:', error);
+      setExpenses([]);
     } finally {
       setLoading(false);
     }
   }
 
-  // Calculate budget totals
+  // Calculate budget metrics
   const budgetCalculations = useMemo(() => {
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    console.log('BudgetTracker: Calculating budget with expenses:', expenses.length, 'activities:', activities.length);
+    
+    const totalExpenses = expenses.reduce((sum, expense) => {
+      console.log('BudgetTracker: Adding expense amount:', expense.amount, 'category:', expense.category);
+      return sum + expense.amount;
+    }, 0);
+    
     const activityCosts = activities.reduce((sum, activity) => sum + (activity.cost || 0), 0);
-    const totalSpent = totalExpenses + activityCosts;
+    const totalSpent = totalExpenses; // Don't double count - expenses table already includes activity costs
     const remainingBudget = trip.budget - totalSpent;
     const budgetUsed = trip.budget > 0 ? (totalSpent / trip.budget) * 100 : 0;
+
+    console.log('BudgetTracker: Budget calculations:', {
+      totalExpenses,
+      activityCosts,
+      totalSpent,
+      remainingBudget,
+      budgetUsed
+    });
 
     return {
       totalExpenses,
@@ -91,24 +120,32 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
 
   // Calculate category totals
   const categoryTotals = useMemo(() => {
+    console.log('BudgetTracker: Calculating category totals from expenses:', expenses.length);
+    
     return expenseCategories.map(category => {
       const categoryExpenses = expenses.filter(expense => expense.category === category.value);
       const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-      return { 
-        ...category, 
-        total, 
-        count: categoryExpenses.length 
+      
+      console.log(`BudgetTracker: Category ${category.value}: ${categoryExpenses.length} expenses, total: ${total}`);
+      
+      return {
+        ...category,
+        total,
+        count: categoryExpenses.length
       };
     });
   }, [expenses]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
-
-    setLoading(true);
+    
     try {
+      setLoading(true);
+      console.log('BudgetTracker: Submitting expense form data:', formData);
+      
       if (editingExpense) {
+        console.log('BudgetTracker: Updating expense:', editingExpense.id);
+        
         const { error } = await supabase
           .from('expenses')
           .update({
@@ -120,29 +157,46 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
           })
           .eq('id', editingExpense.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('BudgetTracker: Error updating expense:', error);
+          throw error;
+        }
+        console.log('BudgetTracker: Expense updated successfully');
       } else {
-        const { error } = await supabase
+        const expenseData = {
+          trip_id: trip.id,
+          amount: formData.amount,
+          category: formData.category,
+          description: formData.description,
+          date: formData.date,
+          currency: trip.currency,
+          activity_id: formData.activity_id || null,
+        };
+        
+        console.log('BudgetTracker: Creating new expense with data:', expenseData);
+        
+        const { data, error } = await supabase
           .from('expenses')
-          .insert({
-            trip_id: trip.id,
-            amount: formData.amount,
-            category: formData.category,
-            description: formData.description,
-            date: formData.date,
-            currency: trip.currency,
-            activity_id: formData.activity_id || null,
-          });
+          .insert(expenseData)
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('BudgetTracker: Error creating expense:', error);
+          console.error('BudgetTracker: Error details:', error.message, error.details);
+          throw error;
+        } else {
+          console.log('BudgetTracker: Expense created successfully:', data);
+        }
       }
 
+      console.log('BudgetTracker: Refreshing expenses after save...');
       await fetchExpenses();
       resetForm();
       onBudgetUpdate?.();
     } catch (error) {
-      console.error('Error saving expense:', error);
-      alert('Failed to save expense. Please try again.');
+      console.error('BudgetTracker: Error saving expense:', error);
+      alert(`Failed to save expense: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -152,17 +206,24 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     if (!confirm('Are you sure you want to delete this expense?')) return;
 
     try {
+      console.log('BudgetTracker: Deleting expense:', expenseId);
+      
       const { error } = await supabase
         .from('expenses')
         .delete()
         .eq('id', expenseId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('BudgetTracker: Error deleting expense:', error);
+        throw error;
+      }
+      
+      console.log('BudgetTracker: Expense deleted successfully, refreshing...');
       await fetchExpenses();
       onBudgetUpdate?.();
     } catch (error) {
-      console.error('Error deleting expense:', error);
-      alert('Failed to delete expense. Please try again.');
+      console.error('BudgetTracker: Error deleting expense:', error);
+      alert(`Failed to delete expense: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -244,8 +305,9 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">Activity Costs</p>
               <p className="text-lg font-semibold text-blue-600">
-                {formatCurrency(budgetCalculations.activityCosts, trip.currency as Currency)}
+                {formatCurrency(0, trip.currency as Currency)}
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Included in expenses</p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">Other Expenses</p>

@@ -58,11 +58,84 @@ export default function EditActivityModal({
         .single();
 
       if (error) throw error;
+      
+      // Handle expense record updates
+      if (data && formData.cost && formData.cost > 0) {
+        // Check if expense record already exists for this activity
+        const { data: existingExpense, error: fetchError } = await supabase
+          .from('expenses')
+          .select('id')
+          .eq('activity_id', activity.id)
+          .maybeSingle();
+
+        if (!fetchError && existingExpense) {
+          // Update existing expense
+          const { error: updateError } = await supabase
+            .from('expenses')
+            .update({
+              amount: formData.cost,
+              category: getCategoryFromActivityType(formData.category),
+              description: `${formData.title} - Activity cost`,
+              date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
+            })
+            .eq('id', existingExpense.id);
+
+          if (updateError) {
+            console.error('Error updating expense record:', updateError);
+          }
+        } else if (!fetchError) {
+          // Create new expense record
+          const { error: createError } = await supabase
+            .from('expenses')
+            .insert({
+              trip_id: activity.trip_id,
+              activity_id: activity.id,
+              amount: formData.cost,
+              currency: 'USD',
+              category: getCategoryFromActivityType(formData.category),
+              description: `${formData.title} - Activity cost`,
+              date: formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0],
+            });
+
+          if (createError) {
+            console.error('Error creating expense record:', createError);
+          }
+        }
+      } else if (data) {
+        // If cost is 0 or removed, delete any existing expense record
+        const { error: deleteError } = await supabase
+          .from('expenses')
+          .delete()
+          .eq('activity_id', activity.id);
+
+        if (deleteError) {
+          console.error('Error deleting expense record:', deleteError);
+        }
+      }
+      
       onActivityUpdated(data);
     } catch (error) {
       console.error('Error updating activity:', error);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Helper function to map activity categories to expense categories
+  function getCategoryFromActivityType(activityCategory: string): 'food' | 'transport' | 'accommodation' | 'entertainment' | 'shopping' | 'other' {
+    switch (activityCategory) {
+      case 'dining':
+        return 'food';
+      case 'transport':
+        return 'transport';
+      case 'accommodation':
+        return 'accommodation';
+      case 'entertainment':
+        return 'entertainment';
+      case 'shopping':
+        return 'shopping';
+      default:
+        return 'other';
     }
   }
 
