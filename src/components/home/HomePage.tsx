@@ -224,7 +224,7 @@ export default function HomePage({
               </div>
               <div className="ml-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Budget</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mr-4">Total Budget</p>
                   <div className="relative">
                     <button
                       onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
