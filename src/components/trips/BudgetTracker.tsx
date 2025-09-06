@@ -49,6 +49,7 @@ export default function BudgetTracker({ trip, activities, onBudgetUpdate }: Budg
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+  const [error, setError] = useState('');
 
   useEffect(() => {
     console.log('BudgetTracker: Component mounted/updated, fetching expenses...');
