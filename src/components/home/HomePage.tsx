@@ -233,7 +233,7 @@ export default function HomePage({
                       }}
                       className="flex items-center px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors border border-gray-200 dark:border-gray-600"
                     >
-                      <span className="mr-1">{CURRENCY_SYMBOLS[selectedCurrency]}</span>
+                      <span className="mr-1">{getCurrencySymbol(selectedCurrency)}</span>
                       {selectedCurrency}
                       <ChevronDownIcon className="h-3 w-3 ml-1" />
                     </button>
